@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bot } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Navbar from '@/components/Navbar'
 import { Spinner } from '@/components/Spinner'
 import { useToast } from '@/components/Toast'
+import { AmbientBlobs } from '@/components/motion/AmbientBlobs'
+import { Reveal } from '@/components/motion/Reveal'
 import FilterPills, { type PanelKey } from '@/components/FilterPills'
 import GlobalPanel from '@/components/panels/GlobalPanel'
 import ComponentPanel from '@/components/panels/ComponentPanel'
@@ -27,29 +30,6 @@ const STATUS_STEPS = [
   'Assembling components',
   'Writing documentation',
 ]
-
-function DecorBlobs() {
-  return (
-    <>
-      <div
-        className="pointer-events-none absolute -left-10 bottom-10 h-[420px] w-[420px] rounded-full blur-3xl"
-        style={{
-          background:
-            'radial-gradient(circle, #DDE4FF 0%, rgba(221,228,255,0) 70%)',
-          opacity: 0.6,
-        }}
-      />
-      <div
-        className="pointer-events-none absolute right-24 top-1/3 h-[300px] w-[300px] rounded-full blur-3xl"
-        style={{
-          background:
-            'radial-gradient(circle, #DDE4FF 0%, rgba(221,228,255,0) 70%)',
-          opacity: 0.55,
-        }}
-      />
-    </>
-  )
-}
 
 export default function GeneratorPage() {
   const router = useRouter()
@@ -194,7 +174,12 @@ export default function GeneratorPage() {
         ]}
       />
       <main className="relative min-h-[calc(100vh-72px)] overflow-hidden px-4">
-        <DecorBlobs />
+        <AmbientBlobs
+          blobs={[
+            { size: 420, left: '-4%', bottom: '8%', opacity: 0.6 },
+            { size: 300, right: '10%', top: '30%', opacity: 0.55 },
+          ]}
+        />
         <div className="relative z-10">
           {loading ? (
             <div className="mx-auto mt-24 max-w-5xl rounded-[24px] bg-white p-8 shadow-card">
@@ -214,7 +199,8 @@ export default function GeneratorPage() {
             </div>
           ) : (
             <>
-              <div className="relative mx-auto mt-24 max-w-5xl rounded-[24px] bg-white p-8 shadow-card">
+              <Reveal delay={0.05} className="mx-auto mt-24 max-w-5xl">
+                <div className="relative rounded-[24px] bg-white p-8 shadow-card">
                 <textarea
                   autoFocus
                   rows={3}
@@ -243,13 +229,23 @@ export default function GeneratorPage() {
                     Generate
                   </button>
                 </div>
-              </div>
-
-              {openPanel ? (
-                <div className="mx-auto mt-4 max-w-5xl rounded-[24px] bg-white p-8 shadow-card">
-                  {renderPanel()}
                 </div>
-              ) : null}
+              </Reveal>
+
+              <AnimatePresence>
+                {openPanel ? (
+                  <motion.div
+                    key={openPanel}
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    className="mx-auto mt-4 max-w-5xl rounded-[24px] bg-white p-8 shadow-card"
+                  >
+                    {renderPanel()}
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             </>
           )}
         </div>

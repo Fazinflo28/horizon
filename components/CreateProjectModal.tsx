@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import { X, GripVertical } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/components/Toast'
@@ -55,8 +56,6 @@ export function CreateProjectModal({
       clearTimeout(t)
     }
   }, [open, onClose])
-
-  if (!open) return null
 
   const selectedDevices = DEVICE_OPTIONS.filter((d) => devices[d])
   const canCreate = title.trim().length > 0 && selectedDevices.length > 0 && !busy
@@ -128,15 +127,25 @@ export function CreateProjectModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-[2px]"
-      onClick={onClose}
-    >
-      <div
-        className="w-[400px] max-w-full rounded-card bg-white p-8 shadow-pop"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between">
+    <AnimatePresence>
+      {open ? (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-[2px]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          onClick={onClose}
+        >
+          <motion.div
+            className="w-[400px] max-w-full rounded-card bg-white p-8 shadow-pop"
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between">
           <h2 className="text-xl font-bold text-ink">Create new project</h2>
           <button
             onClick={onClose}
@@ -181,8 +190,10 @@ export function CreateProjectModal({
         >
           {busy ? 'Creating...' : 'Create now'}
         </button>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   )
 }
 

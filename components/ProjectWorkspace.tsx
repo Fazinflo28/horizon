@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowLeft,
   DownloadCloud,
@@ -359,7 +360,15 @@ export default function ProjectWorkspace({
               ))}
             </div>
 
-            {activeTab === 'design' ? (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {activeTab === 'design' ? (
               currentSystem ? (
                 <SystemCanvas
                   system={currentSystem}
@@ -481,6 +490,8 @@ export default function ProjectWorkspace({
                 </div>
               )
             ) : null}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Right rail */}

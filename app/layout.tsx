@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import { ToastProvider } from '@/components/Toast'
+import { MotionProvider } from '@/components/MotionProvider'
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -23,7 +24,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={jakarta.variable}>
       <body className="min-h-screen bg-page font-sans text-body antialiased">
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>
+          <MotionProvider>{children}</MotionProvider>
+        </ToastProvider>
       </body>
     </html>
   )

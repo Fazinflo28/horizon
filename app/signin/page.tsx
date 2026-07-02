@@ -8,6 +8,7 @@ import { useToast } from '@/components/Toast'
 import { Checkbox } from '@/components/Checkbox'
 import { BrandPanel } from '@/components/BrandPanel'
 import { Spinner } from '@/components/Spinner'
+import { Reveal } from '@/components/motion/Reveal'
 
 type Mode = 'signin' | 'signup'
 
@@ -131,7 +132,7 @@ export default function SignInPage() {
       {/* Left: form */}
       <div className="flex flex-col px-6 py-10">
         <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-[420px]">
+          <Reveal className="w-full max-w-[420px]">
             <h1 className="text-4xl font-bold text-ink">
               {isSignup ? 'Create Account' : 'Sign In'}
             </h1>
@@ -264,7 +265,7 @@ export default function SignInPage() {
                 {isSignup ? 'Sign In' : 'Create an Account'}
               </button>
             </p>
-          </div>
+          </Reveal>
         </div>
 
         <p className="pt-8 text-center text-xs text-muted">

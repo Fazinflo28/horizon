@@ -6,6 +6,7 @@ import KitCard from '@/components/KitCard'
 import KitModal from '@/components/KitModal'
 import { Spinner } from '@/components/Spinner'
 import EmptyState from '@/components/EmptyState'
+import { Reveal } from '@/components/motion/Reveal'
 import { Store } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { SHOP_INDUSTRIES } from '@/lib/constants'
@@ -75,8 +76,10 @@ export default function ShopPage() {
             </div>
           ) : filtered.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {filtered.map((kit) => (
-                <KitCard key={kit.id} kit={kit} onOpen={setSelected} />
+              {filtered.map((kit, i) => (
+                <Reveal key={kit.id} delay={Math.min(i * 0.04, 0.4)} y={16}>
+                  <KitCard kit={kit} onOpen={setSelected} />
+                </Reveal>
               ))}
             </div>
           ) : (

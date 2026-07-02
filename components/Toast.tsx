@@ -7,6 +7,7 @@ import {
   useEffect,
   useState,
 } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react'
 
 type ToastType = 'success' | 'error' | 'info'
@@ -33,21 +34,20 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.filter((t) => t.id !== id))
   }, [])
 
-  const toast = useCallback(
-    (message: string, type: ToastType = 'info') => {
-      const id = ++idCounter
-      setItems((prev) => [...prev, { id, message, type }])
-    },
-    [],
-  )
+  const toast = useCallback((message: string, type: ToastType = 'info') => {
+    const id = ++idCounter
+    setItems((prev) => [...prev, { id, message, type }])
+  }, [])
 
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
       <div className="pointer-events-none fixed bottom-6 right-6 z-[100] flex w-[320px] max-w-[calc(100vw-2rem)] flex-col gap-2">
-        {items.map((t) => (
-          <ToastRow key={t.id} item={t} onClose={() => remove(t.id)} />
-        ))}
+        <AnimatePresence initial={false}>
+          {items.map((t) => (
+            <ToastRow key={t.id} item={t} onClose={() => remove(t.id)} />
+          ))}
+        </AnimatePresence>
       </div>
     </ToastContext.Provider>
   )
@@ -79,7 +79,14 @@ function ToastRow({
         : 'text-brand'
 
   return (
-    <div className="pointer-events-auto flex items-start gap-3 rounded-xl border border-line bg-white px-4 py-3 shadow-pop">
+    <motion.div
+      layout
+      initial={{ opacity: 0, x: 40, scale: 0.98 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 40, scale: 0.98 }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className="pointer-events-auto flex items-start gap-3 rounded-xl border border-line bg-white px-4 py-3 shadow-pop"
+    >
       <Icon size={18} className={`mt-0.5 shrink-0 ${color}`} />
       <p className="flex-1 text-sm text-ink">{item.message}</p>
       <button
@@ -89,7 +96,7 @@ function ToastRow({
       >
         <X size={16} />
       </button>
-    </div>
+    </motion.div>
   )
 }
 
