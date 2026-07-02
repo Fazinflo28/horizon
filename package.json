@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:engine": "npx --yes tsx lib/engine/__tests__/color.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.109.1",

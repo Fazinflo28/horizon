@@ -29,11 +29,40 @@ export interface ComponentSpec {
     fontSize: string
   }
   guidelines: string
+  /** Semantic token names this component reads (engine-assembled systems). */
+  tokensUsed?: string[]
 }
 
 export interface DocSection {
   section: string
   content: string
+}
+
+// ---- Engine types (4-stage generation pipeline) ---------------------------
+
+export type RadiusCharacter = 'sharp' | 'soft' | 'rounded' | 'pill'
+export type Density = 'compact' | 'comfortable' | 'spacious'
+export type TypeRatio = 1.2 | 1.25 | 1.333
+
+/** Stage 1 output — the small set of brand decisions the AI makes. */
+export interface Decisions {
+  personality: [string, string, string]
+  primarySeed: string
+  secondarySeed: string
+  neutralTint: string
+  fontFamily: string
+  fontFamilyMono: string
+  radiusCharacter: RadiusCharacter
+  density: Density
+  typeRatio: TypeRatio
+  reasoning: string
+}
+
+/** A semantic design token that (optionally) references a primitive. */
+export interface SemanticToken {
+  name: string
+  value: string
+  ref: string | null
 }
 
 /**
@@ -56,6 +85,7 @@ export interface HorizonSystem {
   }
   typography: {
     fontFamily: string
+    fontFamilyMono?: string
     scale: TypeStep[]
   }
   spacing: {
@@ -71,6 +101,13 @@ export interface HorizonSystem {
   shadows: Array<{ name: string; value: string }>
   components: ComponentSpec[]
   documentation: DocSection[]
+  /** Engine-generated systems only; older/kit systems omit these. */
+  semanticTokens?: SemanticToken[]
+  meta?: {
+    generatedAt: string
+    filters: GenerationFilters
+    decisions: Decisions
+  }
 }
 
 // ---- Database row types ----------------------------------------------------
