@@ -373,6 +373,8 @@ export default function ProjectWorkspace({
                 <SystemCanvas
                   system={currentSystem}
                   versionLabel={currentVersion?.label ?? 'Draft'}
+                  projectId={project.id}
+                  versionId={currentVersion?.id}
                 />
               ) : (
                 <div className="rounded-card bg-surface shadow-card">

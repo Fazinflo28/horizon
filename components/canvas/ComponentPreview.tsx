@@ -18,8 +18,11 @@ import {
   Image as ImageIcon,
   CheckCircle2,
   LayoutGrid,
+  Code,
 } from 'lucide-react'
 import type { HorizonSystem, ComponentSpec } from '@/lib/types'
+import { useToast } from '@/components/Toast'
+import { generateComponentCode } from '@/lib/exporters/component-code'
 
 function resolveTokens(system: HorizonSystem) {
   const p = system.colors?.primary
@@ -646,12 +649,30 @@ export function ComponentPreview({
   component: ComponentSpec
   system: HorizonSystem
 }) {
+  const { toast } = useToast()
   const t = resolveTokens(system)
   const render = RENDERERS[normalize(component.type)]
 
+  const copyCode = () => {
+    const { code } = generateComponentCode(component, system)
+    navigator.clipboard
+      ?.writeText(code)
+      .then(() => toast(`${component.type} code copied`, 'success'))
+      .catch(() => {})
+  }
+
   return (
     <div className="rounded-card bg-surface p-6 shadow-card">
-      <h3 className="font-semibold text-ink">{component.type}</h3>
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="font-semibold text-ink">{component.type}</h3>
+        <button
+          onClick={copyCode}
+          aria-label="Copy component code"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-page hover:text-brand"
+        >
+          <Code size={16} />
+        </button>
+      </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {(component.variants ?? []).map((v) => (
           <span key={v} className="rounded-full border border-line px-2 py-0.5 text-[11px] text-muted">

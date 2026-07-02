@@ -115,15 +115,26 @@ export async function runDocs(
     return { componentGuidelines: (parsed as DocsOutput).componentGuidelines, documentation }
   }
 
-  try {
-    return await attempt(false)
-  } catch {
+  // Docs must never fail — or stall — the pipeline. Race the live call
+  // (with its one retry) against a hard timeout that falls back to static docs
+  // well before the route's maxDuration.
+  const live = (async (): Promise<DocsOutput> => {
     try {
-      return await attempt(true)
+      return await attempt(false)
     } catch {
-      // Docs must never fail the pipeline.
-      return staticDocs(decisions, summary, componentTypes)
+      return await attempt(true)
     }
+  })()
+  const timeout = new Promise<DocsOutput>((resolve) => {
+    setTimeout(
+      () => resolve(staticDocs(decisions, summary, componentTypes)),
+      42000,
+    )
+  })
+  try {
+    return await Promise.race([live, timeout])
+  } catch {
+    return staticDocs(decisions, summary, componentTypes)
   }
 }
 

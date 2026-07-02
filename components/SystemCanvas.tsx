@@ -1,14 +1,14 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Copy } from 'lucide-react'
-import { useToast } from '@/components/Toast'
-import { systemToCss } from '@/lib/css-export'
 import ColorSection from '@/components/canvas/ColorSection'
+import SemanticTokenSection from '@/components/canvas/SemanticTokenSection'
 import TypographySection from '@/components/canvas/TypographySection'
 import SpacingSection from '@/components/canvas/SpacingSection'
 import ShapeSection from '@/components/canvas/ShapeSection'
 import ComponentPreview from '@/components/canvas/ComponentPreview'
+import { ExportMenu } from '@/components/ExportMenu'
+import { useGoogleFont } from '@/components/canvas/useGoogleFont'
 import type { HorizonSystem } from '@/lib/types'
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -18,33 +18,40 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 export function SystemCanvas({
   system,
   versionLabel,
+  projectId,
+  versionId,
 }: {
   system: HorizonSystem
   versionLabel: string
+  projectId?: string
+  versionId?: string
 }) {
-  const { toast } = useToast()
-  const components = system.components ?? []
+  const components = useMemo(() => system.components ?? [], [system.components])
+  const tokens = useMemo(
+    () => system.semanticTokens ?? [],
+    [system.semanticTokens],
+  )
+  const personality = system.meta?.decisions?.personality ?? []
+
+  // Load the actual generated fonts so samples render for real.
+  useGoogleFont(system.typography?.fontFamily)
+  useGoogleFont(system.typography?.fontFamilyMono)
 
   const nav = useMemo(() => {
-    const base = [
-      { id: 'sec-colors', label: 'Colors' },
+    const base = [{ id: 'sec-colors', label: 'Colors' }]
+    if (tokens.length > 0)
+      base.push({ id: 'sec-tokens', label: 'Semantic Tokens' })
+    base.push(
       { id: 'sec-typography', label: 'Typography' },
       { id: 'sec-spacing', label: 'Spacing' },
       { id: 'sec-shape', label: 'Shape & Elevation' },
-    ]
+    )
     const comps = components.map((c, i) => ({
       id: `sec-comp-${i}`,
       label: c.type,
     }))
     return [...base, ...comps, { id: 'sec-docs', label: 'Documentation' }]
-  }, [components])
-
-  const copyCss = () => {
-    navigator.clipboard
-      ?.writeText(systemToCss(system))
-      .then(() => toast('CSS variables copied', 'success'))
-      .catch(() => {})
-  }
+  }, [components, tokens.length])
 
   const goto = (id: string) =>
     document.getElementById(id)?.scrollIntoView({
@@ -78,19 +85,37 @@ export function SystemCanvas({
           <div className="min-w-0">
             <h2 className="text-xl font-bold text-ink">{system.name}</h2>
             <p className="text-sm text-muted">{system.description}</p>
+            {personality.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {personality.map((p) => (
+                  <span
+                    key={p}
+                    className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium capitalize text-brand"
+                  >
+                    {p}
+                  </span>
+                ))}
+              </div>
+            ) : null}
           </div>
-          <button
-            onClick={copyCss}
-            className="ml-auto flex h-10 items-center gap-2 rounded-full border border-brand px-4 text-sm font-semibold text-brand transition-colors hover:bg-brand-50"
-          >
-            <Copy size={16} /> Copy CSS variables
-          </button>
+          <ExportMenu
+            system={system}
+            projectId={projectId}
+            versionId={versionId}
+          />
         </div>
 
         <section id="sec-colors" className="scroll-mt-24">
           <SectionTitle>Colors</SectionTitle>
           <ColorSection system={system} />
         </section>
+
+        {tokens.length > 0 ? (
+          <section id="sec-tokens" className="scroll-mt-24">
+            <SectionTitle>Semantic Tokens</SectionTitle>
+            <SemanticTokenSection tokens={tokens} />
+          </section>
+        ) : null}
 
         <section id="sec-typography" className="scroll-mt-24">
           <SectionTitle>Typography</SectionTitle>
