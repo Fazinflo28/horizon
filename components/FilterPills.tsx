@@ -74,7 +74,7 @@ export function FilterPills({
             className={`flex h-10 items-center gap-1.5 rounded-full border px-4 text-sm transition-colors ${
               active
                 ? 'border-brand text-brand'
-                : 'border-line bg-white text-muted hover:text-ink'
+                : 'border-line bg-surface text-muted hover:text-ink'
             }`}
           >
             {p.label}

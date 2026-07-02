@@ -201,7 +201,7 @@ export function ReviewPipeline({
   }
 
   return (
-    <div className="rounded-card bg-white p-5 shadow-card">
+    <div className="rounded-card bg-surface p-5 shadow-card">
       <p className="mb-4 text-sm font-semibold text-ink">Review Pipeline</p>
 
       {projectStatus === 'rejected' ? (

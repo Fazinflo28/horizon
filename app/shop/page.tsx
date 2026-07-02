@@ -60,7 +60,7 @@ export default function ShopPage() {
                 className={`h-10 rounded-full border px-4 text-sm transition-colors ${
                   active
                     ? 'border-brand bg-brand-50 font-medium text-brand'
-                    : 'border-line bg-white text-muted hover:text-ink'
+                    : 'border-line bg-surface text-muted hover:text-ink'
                 }`}
               >
                 {p}
@@ -69,7 +69,7 @@ export default function ShopPage() {
           })}
         </div>
 
-        <div className="mx-8 my-6 rounded-card bg-white p-6 shadow-card">
+        <div className="mx-8 my-6 rounded-card bg-surface p-6 shadow-card">
           {loading ? (
             <div className="flex justify-center py-24">
               <Spinner size={28} className="text-brand" />

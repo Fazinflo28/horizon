@@ -250,7 +250,7 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
       <div className="relative h-1.5 rounded-full" style={{ background: t.border }}>
         <div className="absolute left-0 top-0 h-1.5 rounded-full" style={{ width: '60%', background: t.primary }} />
         <div
-          className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 bg-white"
+          className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 bg-surface"
           style={{ left: '60%', borderColor: t.primary }}
         />
       </div>
@@ -264,7 +264,7 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
         {['25%', '70%'].map((l) => (
           <div
             key={l}
-            className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 bg-white"
+            className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 bg-surface"
             style={{ left: l, borderColor: t.primary }}
           />
         ))}
@@ -323,7 +323,7 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
 
   navigationbar: (t) => (
     <div
-      className="flex items-center justify-around rounded-xl bg-white px-2 py-2 shadow-sm"
+      className="flex items-center justify-around rounded-xl bg-surface px-2 py-2 shadow-sm"
       style={{ border: `1px solid ${t.border}` }}
     >
       {[Home, Search, Heart, User].map((Icon, i) => (
@@ -337,7 +337,7 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
 
   navigationrail: (t) => (
     <div
-      className="flex w-14 flex-col items-center gap-5 rounded-xl bg-white py-4"
+      className="flex w-14 flex-col items-center gap-5 rounded-xl bg-surface py-4"
       style={{ border: `1px solid ${t.border}` }}
     >
       {[Home, Search, Settings].map((Icon, i) => (
@@ -353,7 +353,7 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
   ),
 
   sidebar: (t) => (
-    <div className="w-52 rounded-xl bg-white p-2" style={{ border: `1px solid ${t.border}` }}>
+    <div className="w-52 rounded-xl bg-surface p-2" style={{ border: `1px solid ${t.border}` }}>
       {['Dashboard', 'Projects', 'Team', 'Settings'].map((l, i) => (
         <div
           key={l}
@@ -378,7 +378,7 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
   ),
 
   menu: (t) => (
-    <div className="w-52 rounded-xl bg-white p-1.5 shadow-lg" style={{ border: `1px solid ${t.border}` }}>
+    <div className="w-52 rounded-xl bg-surface p-1.5 shadow-lg" style={{ border: `1px solid ${t.border}` }}>
       {['Edit', 'Duplicate', 'Delete'].map((l) => (
         <div key={l} className="rounded-lg px-3 py-2 text-sm" style={{ color: t.textInk }}>
           {l}
@@ -388,7 +388,7 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
   ),
 
   contextmenu: (t) => (
-    <div className="w-44 rounded-xl bg-white p-1.5 shadow-lg" style={{ border: `1px solid ${t.border}` }}>
+    <div className="w-44 rounded-xl bg-surface p-1.5 shadow-lg" style={{ border: `1px solid ${t.border}` }}>
       {['Cut', 'Copy', 'Paste'].map((l) => (
         <div key={l} className="flex items-center justify-between rounded-lg px-3 py-1.5 text-sm" style={{ color: t.textInk }}>
           {l}
@@ -399,7 +399,7 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
   ),
 
   card: (t) => (
-    <div className="w-64 overflow-hidden rounded-xl bg-white" style={{ border: `1px solid ${t.border}` }}>
+    <div className="w-64 overflow-hidden rounded-xl bg-surface" style={{ border: `1px solid ${t.border}` }}>
       <div className="flex h-24 items-center justify-center" style={{ background: t.primary50 }}>
         <ImageIcon size={28} style={{ color: t.primary }} />
       </div>
@@ -416,7 +416,7 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
   ),
 
   accordion: (t) => (
-    <div className="max-w-sm divide-y rounded-xl bg-white" style={{ border: `1px solid ${t.border}`, borderColor: t.border }}>
+    <div className="max-w-sm divide-y rounded-xl bg-surface" style={{ border: `1px solid ${t.border}`, borderColor: t.border }}>
       {['What is included?', 'How does billing work?'].map((l, i) => (
         <div key={l} className="flex items-center justify-between px-4 py-3 text-sm" style={{ color: t.textInk }}>
           {l}
@@ -529,7 +529,7 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
   ),
 
   dialog: (t) => (
-    <div className="w-72 rounded-xl bg-white p-5 shadow-xl" style={{ border: `1px solid ${t.border}` }}>
+    <div className="w-72 rounded-xl bg-surface p-5 shadow-xl" style={{ border: `1px solid ${t.border}` }}>
       <p className="text-sm font-semibold" style={{ color: t.textInk }}>Delete project?</p>
       <p className="mt-1 text-xs" style={{ color: t.textMuted }}>This action cannot be undone.</p>
       <div className="mt-4 flex justify-end gap-2">
@@ -544,9 +544,9 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
   ),
 
   popover: (t) => (
-    <div className="relative w-56 rounded-xl bg-white p-4 shadow-lg" style={{ border: `1px solid ${t.border}` }}>
+    <div className="relative w-56 rounded-xl bg-surface p-4 shadow-lg" style={{ border: `1px solid ${t.border}` }}>
       <span
-        className="absolute -top-1.5 left-6 h-3 w-3 rotate-45 bg-white"
+        className="absolute -top-1.5 left-6 h-3 w-3 rotate-45 bg-surface"
         style={{ borderLeft: `1px solid ${t.border}`, borderTop: `1px solid ${t.border}` }}
       />
       <p className="text-sm font-semibold" style={{ color: t.textInk }}>Quick tip</p>
@@ -588,7 +588,7 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
 
 function listPreview(t: Tokens): React.ReactNode {
   return (
-    <div className="max-w-sm divide-y rounded-xl bg-white" style={{ border: `1px solid ${t.border}`, borderColor: t.border }}>
+    <div className="max-w-sm divide-y rounded-xl bg-surface" style={{ border: `1px solid ${t.border}`, borderColor: t.border }}>
       {['Ada Lovelace', 'Alan Turing', 'Grace Hopper'].map((name, i) => (
         <div key={name} className="flex items-center gap-3 px-4 py-3">
           <span
@@ -650,7 +650,7 @@ export function ComponentPreview({
   const render = RENDERERS[normalize(component.type)]
 
   return (
-    <div className="rounded-card bg-white p-6 shadow-card">
+    <div className="rounded-card bg-surface p-6 shadow-card">
       <h3 className="font-semibold text-ink">{component.type}</h3>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {(component.variants ?? []).map((v) => (

@@ -80,7 +80,7 @@ export default function HomePage() {
         <AmbientBlobs />
         <div className="relative z-10 flex flex-col items-center">
           <Reveal delay={0.05}>
-            <div className="flex items-center gap-8 rounded-full bg-white px-10 py-6 shadow-pop">
+            <div className="flex items-center gap-8 rounded-full bg-surface px-10 py-6 shadow-pop">
               {TOOLS.map((t) => (
                 <button
                   key={t.source}

@@ -182,7 +182,7 @@ export default function GeneratorPage() {
         />
         <div className="relative z-10">
           {loading ? (
-            <div className="mx-auto mt-24 max-w-5xl rounded-[24px] bg-white p-8 shadow-card">
+            <div className="mx-auto mt-24 max-w-5xl rounded-[24px] bg-surface p-8 shadow-card">
               <div className="space-y-3">
                 {['85%', '70%', '92%', '60%', '78%'].map((w, i) => (
                   <div
@@ -200,7 +200,7 @@ export default function GeneratorPage() {
           ) : (
             <>
               <Reveal delay={0.05} className="mx-auto mt-24 max-w-5xl">
-                <div className="relative rounded-[24px] bg-white p-8 shadow-card">
+                <div className="relative rounded-[24px] bg-surface p-8 shadow-card">
                 <textarea
                   autoFocus
                   rows={3}
@@ -240,7 +240,7 @@ export default function GeneratorPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                    className="mx-auto mt-4 max-w-5xl rounded-[24px] bg-white p-8 shadow-card"
+                    className="mx-auto mt-4 max-w-5xl rounded-[24px] bg-surface p-8 shadow-card"
                   >
                     {renderPanel()}
                   </motion.div>

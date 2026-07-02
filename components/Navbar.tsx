@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Search, Bell, Moon, Plus, Menu as MenuIcon } from 'lucide-react'
+import { Search, Bell, Moon, Sun, Plus, Menu as MenuIcon } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { createClient } from '@/lib/supabase/client'
 import CreateProjectModal from '@/components/CreateProjectModal'
@@ -62,6 +62,26 @@ export default function Navbar({
     }
   }, [userName])
 
+  // Theme toggle (mounted guard avoids a hydration icon mismatch).
+  const [mounted, setMounted] = useState(false)
+  const [isDark, setIsDark] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+    setIsDark(document.documentElement.classList.contains('dark'))
+  }, [])
+  const toggleTheme = () => {
+    const next = !isDark
+    setIsDark(next)
+    const el = document.documentElement
+    if (next) el.classList.add('dark')
+    else el.classList.remove('dark')
+    try {
+      localStorage.setItem('theme', next ? 'dark' : 'light')
+    } catch {
+      // ignore storage failures (private mode, etc.)
+    }
+  }
+
   const initials = initialsFrom(resolvedName)
 
   const renderLink = (l: NavLink) => {
@@ -96,7 +116,7 @@ export default function Navbar({
   }
 
   return (
-    <header className="sticky top-0 z-40 h-[72px] border-b border-line bg-white px-4 md:px-8">
+    <header className="sticky top-0 z-40 h-[72px] border-b border-line bg-surface px-4 md:px-8">
       <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link
@@ -139,10 +159,11 @@ export default function Navbar({
             <Bell size={20} />
           </button>
           <button
+            onClick={toggleTheme}
             className="text-muted transition-colors hover:text-ink"
-            aria-label="Theme"
+            aria-label="Toggle theme"
           >
-            <Moon size={20} />
+            {mounted && isDark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand">
             {initials}
@@ -158,7 +179,7 @@ export default function Navbar({
       </div>
 
       {menuOpen ? (
-        <div className="absolute left-0 right-0 top-[72px] border-b border-line bg-white px-4 py-4 shadow-card md:hidden">
+        <div className="absolute left-0 right-0 top-[72px] border-b border-line bg-surface px-4 py-4 shadow-card md:hidden">
           <div className="flex flex-col gap-4">
             {links.map(renderLink)}
             <button

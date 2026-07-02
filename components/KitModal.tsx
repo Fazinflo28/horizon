@@ -58,7 +58,7 @@ export function KitModal({
     <AnimatePresence>
       {kit ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-[2px]"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -66,7 +66,7 @@ export function KitModal({
           onClick={onClose}
         >
           <motion.div
-            className="w-[520px] max-w-full rounded-card bg-white p-6 shadow-pop"
+            className="w-[520px] max-w-full rounded-card bg-surface p-6 shadow-pop"
             initial={{ opacity: 0, scale: 0.96, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 10 }}

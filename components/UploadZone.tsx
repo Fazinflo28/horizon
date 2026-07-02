@@ -112,7 +112,7 @@ export function UploadZone({
       <CloudUpload size={22} className="mx-auto text-muted" />
       <p className="mt-2 text-xs text-muted">Drop files here or click to upload</p>
       {busy ? (
-        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/70">
+        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-surface/70">
           <Spinner size={20} className="text-brand" />
         </div>
       ) : null}

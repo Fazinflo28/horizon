@@ -122,7 +122,7 @@ export function SystemCanvas({
 
         <section id="sec-docs" className="scroll-mt-24">
           <SectionTitle>Documentation</SectionTitle>
-          <div className="space-y-5 rounded-card bg-white p-6 shadow-card">
+          <div className="space-y-5 rounded-card bg-surface p-6 shadow-card">
             {(system.documentation ?? []).map((d, i) => (
               <div key={i}>
                 <h3 className="text-base font-semibold text-ink">{d.section}</h3>

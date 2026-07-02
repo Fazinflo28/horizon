@@ -35,7 +35,7 @@ export function SimplePanel({
           className={`h-10 rounded-full border px-4 text-sm transition-colors ${
             isOn(o)
               ? 'border-brand bg-brand text-white'
-              : 'border-line bg-white text-muted hover:text-ink'
+              : 'border-line bg-surface text-muted hover:text-ink'
           }`}
         >
           {o}

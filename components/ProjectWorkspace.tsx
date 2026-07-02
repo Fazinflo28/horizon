@@ -263,7 +263,7 @@ export default function ProjectWorkspace({
         <div className="flex flex-wrap items-center gap-3 py-5">
           <button
             onClick={() => router.back()}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-ink transition-colors hover:bg-white"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-ink transition-colors hover:bg-surface"
             aria-label="Back"
           >
             <ArrowLeft size={18} />
@@ -304,7 +304,7 @@ export default function ProjectWorkspace({
             onChange={(e) => {
               if (e.target.value !== 'none') setSelectedVersionId(e.target.value)
             }}
-            className="h-9 rounded-full border border-line bg-white px-4 text-sm text-body focus:border-brand focus:outline-none"
+            className="h-9 rounded-full border border-line bg-surface px-4 text-sm text-body focus:border-brand focus:outline-none"
           >
             {versionOptions.map((v) => (
               <option key={v.id} value={v.id}>
@@ -375,7 +375,7 @@ export default function ProjectWorkspace({
                   versionLabel={currentVersion?.label ?? 'Draft'}
                 />
               ) : (
-                <div className="rounded-card bg-white shadow-card">
+                <div className="rounded-card bg-surface shadow-card">
                   {isUploadSource ? (
                     <EmptyState
                       icon={DownloadCloud}
@@ -407,7 +407,7 @@ export default function ProjectWorkspace({
                   {files.map((file) => (
                     <div
                       key={file.id}
-                      className="rounded-card bg-white p-4 shadow-card"
+                      className="rounded-card bg-surface p-4 shadow-card"
                     >
                       <div className="flex items-start justify-between">
                         <FileText size={22} className="text-brand" />
@@ -438,7 +438,7 @@ export default function ProjectWorkspace({
                   ))}
                 </div>
               ) : (
-                <div className="rounded-card bg-white shadow-card">
+                <div className="rounded-card bg-surface shadow-card">
                   <EmptyState
                     icon={FileText}
                     title="No assets yet"
@@ -451,7 +451,7 @@ export default function ProjectWorkspace({
             {activeTab === 'documentation' ? (
               currentSystem ? (
                 <div className="space-y-6">
-                  <div className="space-y-5 rounded-card bg-white p-6 shadow-card">
+                  <div className="space-y-5 rounded-card bg-surface p-6 shadow-card">
                     {(currentSystem.documentation ?? []).map((d, i) => (
                       <div key={i}>
                         <h3 className="text-base font-semibold text-ink">
@@ -475,13 +475,13 @@ export default function ProjectWorkspace({
                         <Clipboard size={14} /> Copy
                       </button>
                     </div>
-                    <pre className="overflow-x-auto rounded-xl bg-ink p-5 font-mono text-xs leading-relaxed text-white/90 thin-scroll">
+                    <pre className="overflow-x-auto rounded-xl bg-[#0F172A] p-5 font-mono text-xs leading-relaxed text-white/90 thin-scroll">
                       {systemToCss(currentSystem)}
                     </pre>
                   </div>
                 </div>
               ) : (
-                <div className="rounded-card bg-white shadow-card">
+                <div className="rounded-card bg-surface shadow-card">
                   <EmptyState
                     icon={FileText}
                     title="No documentation yet"

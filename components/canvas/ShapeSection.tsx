@@ -20,7 +20,7 @@ export function ShapeSection({ system }: { system: HorizonSystem }) {
           {radii.map(([name, val]) => (
             <div key={name} className="flex flex-col items-center gap-2">
               <div
-                className="h-[72px] w-[72px] border border-line bg-white"
+                className="h-[72px] w-[72px] border border-line bg-surface"
                 style={{ borderRadius: val }}
               />
               <span className="text-xs text-muted">
@@ -37,7 +37,7 @@ export function ShapeSection({ system }: { system: HorizonSystem }) {
           {shadows.map((s, i) => (
             <div key={i} className="flex flex-col items-center gap-2">
               <div
-                className="h-[72px] w-[72px] rounded-xl bg-white"
+                className="h-[72px] w-[72px] rounded-xl bg-surface"
                 style={{ boxShadow: s.value }}
               />
               <span className="text-xs text-muted">{s.name}</span>

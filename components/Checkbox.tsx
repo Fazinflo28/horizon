@@ -29,7 +29,7 @@ export function Checkbox({
     >
       <span
         className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] border-2 transition-colors ${
-          checked ? 'border-brand bg-brand' : 'border-line bg-white'
+          checked ? 'border-brand bg-brand' : 'border-line bg-surface'
         }`}
       >
         {checked ? <Check size={12} strokeWidth={3} className="text-white" /> : null}

@@ -85,7 +85,7 @@ function ToastRow({
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 40, scale: 0.98 }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      className="pointer-events-auto flex items-start gap-3 rounded-xl border border-line bg-white px-4 py-3 shadow-pop"
+      className="pointer-events-auto flex items-start gap-3 rounded-xl border border-line bg-surface px-4 py-3 shadow-pop"
     >
       <Icon size={18} className={`mt-0.5 shrink-0 ${color}`} />
       <p className="flex-1 text-sm text-ink">{item.message}</p>

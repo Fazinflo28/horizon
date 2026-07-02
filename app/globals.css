@@ -3,11 +3,32 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --page: 240 243 252;
+    --surface: 255 255 255;
+    --field: 244 247 254;
+    --ink: 27 37 89;
+    --body: 75 85 99;
+    --muted: 163 174 208;
+    --line: 224 229 242;
+    color-scheme: light;
+  }
+  .dark {
+    --page: 11 17 32;
+    --surface: 22 30 51;
+    --field: 30 39 64;
+    --ink: 234 238 249;
+    --body: 170 179 204;
+    --muted: 110 119 145;
+    --line: 41 51 77;
+    color-scheme: dark;
+  }
   html {
     -webkit-text-size-adjust: 100%;
   }
   body {
     @apply bg-page font-sans text-body antialiased;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 

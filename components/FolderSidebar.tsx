@@ -39,7 +39,7 @@ export function FolderSidebar({
   }
 
   return (
-    <div className="rounded-card bg-white p-4 shadow-card">
+    <div className="rounded-card bg-surface p-4 shadow-card">
       <p className="mb-3 px-2 text-sm font-semibold text-ink">Folders</p>
       <ul className="space-y-1">
         {folders.map((f) => {
