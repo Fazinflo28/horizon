@@ -83,6 +83,7 @@ export async function POST(request: Request) {
       )
     }
     if (e instanceof FigmaError) {
+      console.error('[figma import] FigmaError', e.code, e.status)
       if (e.code === 'forbidden')
         return NextResponse.json(
           { error: 'This token cannot access that file' },
@@ -93,6 +94,18 @@ export async function POST(request: Request) {
           { error: 'File not found, check the link' },
           { status: 404 },
         )
+      if (e.code === 'rate_limited')
+        return NextResponse.json(
+          {
+            error:
+              'Figma is rate-limiting your token. Wait a minute and try again.',
+          },
+          { status: 429 },
+        )
+      return NextResponse.json(
+        { error: `Figma API error (status ${e.status ?? 'unknown'})` },
+        { status: 502 },
+      )
     }
     console.error('[figma import] extraction error', e)
     return NextResponse.json({ error: 'Could not import this file' }, { status: 502 })

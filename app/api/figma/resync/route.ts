@@ -97,11 +97,22 @@ export async function POST(request: Request) {
     file = await figmaGetFile(token, key)
   } catch (e) {
     if (e instanceof FigmaError) {
+      console.error('[figma resync] FigmaError', e.code, e.status)
       if (e.code === 'forbidden')
         return NextResponse.json({ error: 'This token cannot access that file' }, { status: 403 })
       if (e.code === 'not_found')
         return NextResponse.json({ error: 'File not found in Figma' }, { status: 404 })
+      if (e.code === 'rate_limited')
+        return NextResponse.json(
+          { error: 'Figma is rate-limiting your token. Wait a minute and try again.' },
+          { status: 429 },
+        )
+      return NextResponse.json(
+        { error: `Figma API error (status ${e.status ?? 'unknown'})` },
+        { status: 502 },
+      )
     }
+    console.error('[figma resync] network error', e)
     return NextResponse.json({ error: 'Could not reach Figma' }, { status: 502 })
   }
 
