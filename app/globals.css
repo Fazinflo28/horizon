@@ -8,9 +8,9 @@
     --surface: 255 255 255;
     --field: 244 247 254;
     --ink: 27 37 89;
-    --body: 75 85 99;
-    --muted: 163 174 208;
-    --line: 224 229 242;
+    --body: 64 74 92;
+    --muted: 106 115 143;
+    --line: 220 226 240;
     color-scheme: light;
   }
   .dark {

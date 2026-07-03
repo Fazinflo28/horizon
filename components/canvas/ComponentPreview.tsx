@@ -548,6 +548,23 @@ const RENDERERS: Record<string, (t: Tokens) => React.ReactNode> = {
     </div>
   ),
 
+  modal: (t) => (
+    <div className="w-72 rounded-xl bg-surface p-5 shadow-xl" style={{ border: `1px solid ${t.border}` }}>
+      <p className="text-sm font-semibold" style={{ color: t.textInk }}>Modal title</p>
+      <p className="mt-1 text-xs" style={{ color: t.textMuted }}>
+        Modals focus attention on a single task and block the page behind a scrim.
+      </p>
+      <div className="mt-4 flex justify-end gap-2">
+        <button className="h-9 px-4 text-xs font-semibold" style={{ color: t.textMuted, border: `1px solid ${t.border}`, borderRadius: t.radiusMd }}>
+          Cancel
+        </button>
+        <button className="h-9 px-4 text-xs font-semibold text-white" style={{ background: t.primary, borderRadius: t.radiusMd }}>
+          Confirm
+        </button>
+      </div>
+    </div>
+  ),
+
   popover: (t) => (
     <div className="relative w-56 rounded-xl bg-surface p-4 shadow-lg" style={{ border: `1px solid ${t.border}` }}>
       <span
@@ -625,18 +642,24 @@ function SpecFallback({ component, t }: { component: ComponentSpec; t: Tokens })
     ['Font size', component.specs?.fontSize ?? '—'],
   ]
   return (
-    <div className="flex items-center gap-4">
+    <div className="w-full">
       <div
-        className="flex h-10 items-center rounded-lg px-4 text-xs font-semibold"
+        className="mb-3 inline-flex h-8 items-center rounded-lg px-3 text-xs font-semibold"
         style={{ background: t.primary50, color: t.primary }}
       >
         {component.type}
       </div>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs" style={{ color: t.textMuted }}>
+      <div className="grid grid-cols-2 gap-2 text-xs">
         {rows.map(([k, v]) => (
-          <div key={k} className="flex gap-2">
-            <span>{k}:</span>
-            <span style={{ color: t.textInk }}>{v}</span>
+          <div
+            key={k}
+            className="flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5"
+            style={{ background: '#FFFFFF', border: `1px solid ${t.border}` }}
+          >
+            <span style={{ color: t.textMuted }}>{k}</span>
+            <span className="font-medium" style={{ color: t.textInk }}>
+              {v}
+            </span>
           </div>
         ))}
       </div>
@@ -668,9 +691,9 @@ export function ComponentPreview({
   }
 
   return (
-    <div className="rounded-card bg-surface p-6 shadow-card">
+    <div className="rounded-card bg-surface p-4 shadow-card">
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-semibold text-ink">{component.type}</h3>
+        <h3 className="text-sm font-semibold text-ink">{component.type}</h3>
         <button
           onClick={copyCode}
           aria-label="Copy component code"
@@ -692,7 +715,7 @@ export function ComponentPreview({
         ))}
       </div>
       <div
-        className={`relative mt-4 flex min-h-[96px] items-center rounded-xl bg-page p-6 ${
+        className={`relative mt-3 flex min-h-[84px] items-center rounded-xl bg-page p-4 ${
           showImage ? 'justify-center' : ''
         }`}
       >

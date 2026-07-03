@@ -11,7 +11,8 @@ import {
 import { buildScale } from '../typography'
 import { buildSemanticTokens } from '../foundations'
 import { mixHex, resolveToken } from '@/lib/exporters/svg/primitives'
-import type { HorizonSystem } from '@/lib/types'
+import { renderPreview, hasRealBuilder, normType } from '@/lib/exporters/svg/components'
+import type { ComponentSpec, HorizonSystem } from '@/lib/types'
 
 let failures = 0
 const HEX = /^#[0-9A-Fa-f]{6}$/
@@ -98,6 +99,31 @@ console.log('figma-kit primitives')
   // fallback path (no semanticTokens)
   const noTokens = { colors: sample.colors } as unknown as HorizonSystem
   assert(HEX.test(resolveToken(noTokens, 'color-text-primary')), 'resolveToken falls back to ramps')
+
+  // component builders: mapped types get a real builder, everything else the
+  // generic spec card — and neither must ever emit a forbidden element.
+  const fullSystem = {
+    ...sample,
+    typography: { fontFamily: 'Inter', scale: [] },
+    radius: { sm: '6px', md: '10px', lg: '16px', full: '9999px' },
+  } as unknown as HorizonSystem
+  const mkComp = (type: string): ComponentSpec => ({
+    type,
+    variants: ['a'],
+    states: ['b'],
+    specs: { height: '44px', paddingX: '16px', radius: '8px', fontSize: '14px' },
+    guidelines: '',
+  })
+  assert(hasRealBuilder('Button') && hasRealBuilder('Text Field'), 'Button/Text Field have real builders')
+  assert(!hasRealBuilder('Totally Custom Widget'), 'unknown type has no real builder')
+  const FORBIDDEN = /<(filter|feDropShadow|mask|clipPath|foreignObject|image|style)[\s>/]/
+  for (const type of ['Button', 'Text Field', 'Toast', 'Totally Custom Widget']) {
+    const pv = renderPreview(fullSystem, `Component/${type}/preview`, 456, mkComp(type))
+    assert(pv.inner.length > 0 && pv.w > 0 && pv.h > 0, `renderPreview(${type}) returns markup + size`)
+    assert(!FORBIDDEN.test(pv.inner), `renderPreview(${type}) has no forbidden elements`)
+    assert(pv.w <= 456, `renderPreview(${type}) fits within available width`)
+  }
+  assert(normType('Floating Button (FAB)') === 'floatingbuttonfab', 'normType strips non-alphanumerics')
 }
 
 if (failures > 0) {

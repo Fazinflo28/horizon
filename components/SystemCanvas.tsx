@@ -89,7 +89,7 @@ export function SystemCanvas({
         </div>
       </aside>
 
-      <div className="min-w-0 flex-1 space-y-10">
+      <div className="min-w-0 flex-1 space-y-8">
         <div className="flex flex-wrap items-start gap-3">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -156,7 +156,7 @@ export function SystemCanvas({
         {components.length > 0 ? (
           <section className="scroll-mt-24">
             <SectionTitle>Components</SectionTitle>
-            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
               {components.map((c, i) => (
                 <div key={i} id={`sec-comp-${i}`} className="scroll-mt-24">
                   <ComponentPreview
