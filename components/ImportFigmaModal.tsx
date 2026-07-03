@@ -7,9 +7,9 @@ import { useToast } from '@/components/Toast'
 import { Spinner } from '@/components/Spinner'
 import FigmaMark from '@/components/FigmaMark'
 import { extractFileKey } from '@/lib/figma/client'
+import type { HorizonSystem } from '@/lib/types'
 
 const STATUS_STEPS = [
-  'Fetching file from Figma',
   'Reading styles and variables',
   'Extracting color and type tokens',
   'Mapping components',
@@ -17,17 +17,19 @@ const STATUS_STEPS = [
   'Finalizing',
 ]
 
-interface Meta {
+interface Prepared {
   name: string
   lastModified: string
   key: string
+  componentCount: number
+  system: HorizonSystem
+  previewNodeIds: Record<string, string>
 }
 
 function relativeTime(iso: string): string {
   const then = new Date(iso).getTime()
-  const diff = Date.now() - then
   if (Number.isNaN(then)) return 'unknown'
-  const min = Math.round(diff / 60000)
+  const min = Math.round((Date.now() - then) / 60000)
   if (min < 1) return 'just now'
   if (min < 60) return `${min} min ago`
   const hr = Math.round(min / 60)
@@ -48,7 +50,7 @@ export function ImportFigmaModal({
   const router = useRouter()
   const { toast } = useToast()
   const [url, setUrl] = useState('')
-  const [meta, setMeta] = useState<Meta | null>(null)
+  const [prepared, setPrepared] = useState<Prepared | null>(null)
   const [title, setTitle] = useState('')
   const [fetching, setFetching] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -57,7 +59,7 @@ export function ImportFigmaModal({
   useEffect(() => {
     if (!open) return
     setUrl('')
-    setMeta(null)
+    setPrepared(null)
     setTitle('')
     setFetching(false)
     setImporting(false)
@@ -92,28 +94,28 @@ export function ImportFigmaModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
       })
-      const data = (await res.json().catch(() => ({}))) as {
-        name?: string
-        lastModified?: string
-        key?: string
+      const data = (await res.json().catch(() => ({}))) as Partial<Prepared> & {
         error?: string
       }
-      if (!res.ok || !data.key) {
+      if (!res.ok || !data.key || !data.system) {
         if (data.error === 'not_connected') {
           toast('Connect Figma first in Settings', 'error')
           onClose()
           return
         }
-        toast(data.error || 'Could not fetch file', 'error')
+        toast(data.error || 'Could not read file', 'error')
         return
       }
-      const m = {
+      const p: Prepared = {
         name: data.name || 'Untitled',
         lastModified: data.lastModified || '',
         key: data.key,
+        componentCount: data.componentCount ?? 0,
+        system: data.system,
+        previewNodeIds: data.previewNodeIds ?? {},
       }
-      setMeta(m)
-      setTitle(m.name)
+      setPrepared(p)
+      setTitle(p.name)
     } catch {
       toast('Network error, please try again', 'error')
     } finally {
@@ -122,13 +124,18 @@ export function ImportFigmaModal({
   }
 
   async function doImport() {
-    if (!meta || !title.trim()) return
+    if (!prepared || !title.trim()) return
     setImporting(true)
     try {
       const res = await fetch('/api/figma/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: meta.key, title: title.trim() }),
+        body: JSON.stringify({
+          key: prepared.key,
+          title: title.trim(),
+          system: prepared.system,
+          previewNodeIds: prepared.previewNodeIds,
+        }),
       })
       const data = (await res.json().catch(() => ({}))) as {
         projectId?: string
@@ -141,7 +148,7 @@ export function ImportFigmaModal({
         return
       }
       toast(
-        `Imported ${data.componentCount ?? 0} components from Figma`,
+        `Imported ${data.componentCount ?? prepared.componentCount} components from Figma`,
         'success',
       )
       router.push(`/project/${data.projectId}`)
@@ -169,9 +176,6 @@ export function ImportFigmaModal({
               <Spinner size={16} className="text-brand" />
               {STATUS_STEPS[statusIndex]}
             </div>
-            <p className="mt-2 text-xs text-muted">
-              This can take up to a minute for large files.
-            </p>
           </div>
         ) : (
           <>
@@ -189,7 +193,7 @@ export function ImportFigmaModal({
               </button>
             </div>
 
-            {!meta ? (
+            {!prepared ? (
               <div className="mt-5">
                 <label className="text-sm font-medium text-ink">
                   Figma file link
@@ -211,7 +215,7 @@ export function ImportFigmaModal({
                 >
                   {fetching ? (
                     <>
-                      <Spinner size={16} className="text-white" /> Fetching...
+                      <Spinner size={16} className="text-white" /> Reading file...
                     </>
                   ) : (
                     'Fetch file'
@@ -224,10 +228,13 @@ export function ImportFigmaModal({
                   <FileText size={22} className="shrink-0 text-brand" />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-ink">
-                      {meta.name}
+                      {prepared.name}
                     </p>
                     <p className="text-xs text-muted">
-                      Last modified {relativeTime(meta.lastModified)}
+                      {prepared.componentCount} components ·{' '}
+                      {prepared.lastModified
+                        ? `updated ${relativeTime(prepared.lastModified)}`
+                        : ''}
                     </p>
                   </div>
                 </div>

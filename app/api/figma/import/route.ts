@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { decryptToken, assertEncryptionKey } from '@/lib/figma/crypto'
-import {
-  figmaGetFile,
-  figmaGetVariables,
-  figmaGetImages,
-  FigmaError,
-} from '@/lib/figma/client'
-import { extractSystem, ExtractError } from '@/lib/figma/extract'
-import type { FolderKind, ReviewStage } from '@/lib/types'
+import { figmaGetImages } from '@/lib/figma/client'
+import type {
+  HorizonSystem,
+  FolderKind,
+  ReviewStage,
+  PreviewEntry,
+} from '@/lib/types'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -21,10 +20,24 @@ const FOLDER_DEFS: { name: string; kind: FolderKind }[] = [
 ]
 const REVIEW_STAGES: ReviewStage[] = ['copy', 'tech', 'accessibility', 'design']
 
-interface PreviewEntry {
-  nodeId: string
-  imageUrl: string
-  fetchedAt: string
+const HEX = /^#[0-9A-Fa-f]{6}$/
+
+// The system is produced by /file-meta (our own extractor) and round-tripped
+// through the client; validate its shape before persisting.
+function isValidSystem(s: unknown): s is HorizonSystem {
+  if (!s || typeof s !== 'object') return false
+  const sys = s as {
+    name?: unknown
+    colors?: { primary?: Record<string, string> }
+    components?: unknown
+    meta?: { source?: unknown }
+  }
+  if (typeof sys.name !== 'string') return false
+  const p500 = sys.colors?.primary?.['500']
+  if (typeof p500 !== 'string' || !HEX.test(p500)) return false
+  if (!Array.isArray(sys.components)) return false
+  if (sys.meta?.source !== 'figma') return false
+  return true
 }
 
 export async function POST(request: Request) {
@@ -40,7 +53,12 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
 
-  let body: { key?: unknown; title?: unknown }
+  let body: {
+    key?: unknown
+    title?: unknown
+    system?: unknown
+    previewNodeIds?: unknown
+  }
   try {
     body = await request.json()
   } catch {
@@ -48,8 +66,16 @@ export async function POST(request: Request) {
   }
   const key = typeof body.key === 'string' ? body.key : ''
   const title = typeof body.title === 'string' ? body.title.trim() : ''
+  const system = body.system
+  const previewNodeIds =
+    body.previewNodeIds && typeof body.previewNodeIds === 'object'
+      ? (body.previewNodeIds as Record<string, string>)
+      : {}
   if (!key || !title) {
     return NextResponse.json({ error: 'Missing file key or title' }, { status: 400 })
+  }
+  if (!isValidSystem(system)) {
+    return NextResponse.json({ error: 'Invalid system payload' }, { status: 400 })
   }
 
   const { data: conn } = await supabase
@@ -66,52 +92,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Stored token is unreadable' }, { status: 500 })
   }
 
-  // Fetch + extract (before any DB writes).
-  let system
-  let previewNodeIds: Record<string, string>
-  try {
-    const file = await figmaGetFile(token, key)
-    const variables = await figmaGetVariables(token, key)
-    const result = await extractSystem(file, variables, key)
-    system = result.system
-    previewNodeIds = result.previewNodeIds
-  } catch (e) {
-    if (e instanceof ExtractError && e.code === 'no_styles') {
-      return NextResponse.json(
-        { error: 'This file has no color or text styles to import' },
-        { status: 422 },
-      )
-    }
-    if (e instanceof FigmaError) {
-      console.error('[figma import] FigmaError', e.code, e.status)
-      if (e.code === 'forbidden')
-        return NextResponse.json(
-          { error: 'This token cannot access that file' },
-          { status: 403 },
-        )
-      if (e.code === 'not_found')
-        return NextResponse.json(
-          { error: 'File not found, check the link' },
-          { status: 404 },
-        )
-      if (e.code === 'rate_limited')
-        return NextResponse.json(
-          {
-            error:
-              'Figma is rate-limiting your token. Wait a minute and try again.',
-          },
-          { status: 429 },
-        )
-      return NextResponse.json(
-        { error: `Figma API error (status ${e.status ?? 'unknown'})` },
-        { status: 502 },
-      )
-    }
-    console.error('[figma import] extraction error', e)
-    return NextResponse.json({ error: 'Could not import this file' }, { status: 502 })
-  }
-
-  // Insert project first; on any later failure, delete it (cascade cleans children).
   const nowIso = new Date().toISOString()
   const { data: project, error: pErr } = await supabase
     .from('projects')
@@ -146,7 +126,7 @@ export async function POST(request: Request) {
     )
     if (rErr) throw new Error(rErr.message)
 
-    // Previews (optional — never fail import).
+    // Previews (best-effort — the only Figma call at import time).
     let preview_map: Record<string, PreviewEntry> | null = null
     const entries = Object.entries(previewNodeIds).slice(0, 24)
     if (entries.length > 0) {

@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { decryptToken, assertEncryptionKey } from '@/lib/figma/crypto'
-import { figmaGetFileMeta, extractFileKey, FigmaError } from '@/lib/figma/client'
+import {
+  figmaGetFile,
+  figmaGetVariables,
+  extractFileKey,
+  FigmaError,
+} from '@/lib/figma/client'
+import { extractSystem, ExtractError } from '@/lib/figma/extract'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 
 export async function POST(request: Request) {
   try {
@@ -46,14 +53,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Stored token is unreadable' }, { status: 500 })
   }
 
+  // Read + extract ONCE here; the client passes the result to /import so we
+  // don't re-read the file (halves Figma calls per import).
   try {
-    const meta = await figmaGetFileMeta(token, key)
+    const file = await figmaGetFile(token, key)
+    const variables = await figmaGetVariables(token, key)
+    const { system, previewNodeIds } = await extractSystem(file, variables, key)
     return NextResponse.json({
-      name: meta.name,
-      lastModified: meta.lastModified,
-      key: meta.key,
+      name: system.name,
+      lastModified: system.meta?.figmaLastModified ?? file.lastModified,
+      key,
+      componentCount: system.components.length,
+      system,
+      previewNodeIds,
     })
   } catch (e) {
+    if (e instanceof ExtractError && e.code === 'no_styles') {
+      return NextResponse.json(
+        { error: 'This file has no color or text styles to import' },
+        { status: 422 },
+      )
+    }
     if (e instanceof FigmaError) {
       console.error('[figma file-meta] FigmaError', e.code, e.status)
       if (e.code === 'forbidden')
@@ -69,8 +89,7 @@ export async function POST(request: Request) {
       if (e.code === 'rate_limited')
         return NextResponse.json(
           {
-            error:
-              'Figma is rate-limiting your token. Wait a minute and try again.',
+            error: `Figma is rate-limiting your token. Try again in ~${e.retryAfter ?? 60}s.`,
           },
           { status: 429 },
         )

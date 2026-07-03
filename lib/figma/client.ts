@@ -9,11 +9,13 @@ export type FigmaErrorCode =
 export class FigmaError extends Error {
   code: FigmaErrorCode
   status?: number
-  constructor(code: FigmaErrorCode, status?: number) {
+  retryAfter?: number
+  constructor(code: FigmaErrorCode, status?: number, retryAfter?: number) {
     super(code)
     this.name = 'FigmaError'
     this.code = code
     this.status = status
+    this.retryAfter = retryAfter
   }
 }
 
@@ -115,13 +117,27 @@ export interface VariablesResponse {
 
 // ---- Fetch with 429 retry-once -------------------------------------------
 
-async function req<T>(token: string, path: string): Promise<T> {
+function retryAfterSeconds(res: Response): number | undefined {
+  const ra = Number(res.headers.get('retry-after'))
+  return Number.isFinite(ra) && ra > 0 ? ra : undefined
+}
+
+async function req<T>(
+  token: string,
+  path: string,
+  retryOn429 = true,
+): Promise<T> {
   const opts = { headers: { 'X-Figma-Token': token } }
   let res = await fetch(BASE + path, opts)
-  if (res.status === 429) {
-    await new Promise((r) => setTimeout(r, 2000))
+  let attempts = 0
+  while (res.status === 429 && retryOn429 && attempts < 2) {
+    const waitS = Math.min(retryAfterSeconds(res) ?? 2, 8)
+    await new Promise((r) => setTimeout(r, waitS * 1000))
     res = await fetch(BASE + path, opts)
-    if (res.status === 429) throw new FigmaError('rate_limited', 429)
+    attempts++
+  }
+  if (res.status === 429) {
+    throw new FigmaError('rate_limited', 429, retryAfterSeconds(res))
   }
   if (res.ok) return (await res.json()) as T
   if (res.status === 403) throw new FigmaError('forbidden', 403)
@@ -179,9 +195,11 @@ export async function figmaGetImages(
   for (let i = 0; i < nodeIds.length; i += 50) {
     const batch = nodeIds.slice(i, i + 50)
     const ids = batch.map((id) => encodeURIComponent(id)).join(',')
+    // Images are best-effort — fail fast on 429 instead of burning retry budget.
     const d = await req<{ images?: Record<string, string | null> }>(
       token,
       `/v1/images/${key}?ids=${ids}&format=png&scale=2`,
+      false,
     )
     Object.assign(out, d.images ?? {})
   }

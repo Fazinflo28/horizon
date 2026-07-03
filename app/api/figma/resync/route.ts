@@ -104,7 +104,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'File not found in Figma' }, { status: 404 })
       if (e.code === 'rate_limited')
         return NextResponse.json(
-          { error: 'Figma is rate-limiting your token. Wait a minute and try again.' },
+          {
+            error: `Figma is rate-limiting your token. Try again in ~${e.retryAfter ?? 60}s.`,
+          },
           { status: 429 },
         )
       return NextResponse.json(
