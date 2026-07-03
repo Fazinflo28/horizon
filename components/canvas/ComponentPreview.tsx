@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   Star,
   Plus,
@@ -23,6 +24,7 @@ import {
 import type { HorizonSystem, ComponentSpec } from '@/lib/types'
 import { useToast } from '@/components/Toast'
 import { generateComponentCode } from '@/lib/exporters/component-code'
+import FigmaMark from '@/components/FigmaMark'
 
 function resolveTokens(system: HorizonSystem) {
   const p = system.colors?.primary
@@ -645,13 +647,17 @@ function SpecFallback({ component, t }: { component: ComponentSpec; t: Tokens })
 export function ComponentPreview({
   component,
   system,
+  previewUrl,
 }: {
   component: ComponentSpec
   system: HorizonSystem
+  previewUrl?: string
 }) {
   const { toast } = useToast()
+  const [imgFailed, setImgFailed] = useState(false)
   const t = resolveTokens(system)
   const render = RENDERERS[normalize(component.type)]
+  const showImage = Boolean(previewUrl) && !imgFailed
 
   const copyCode = () => {
     const { code } = generateComponentCode(component, system)
@@ -685,8 +691,29 @@ export function ComponentPreview({
           </span>
         ))}
       </div>
-      <div className="mt-4 flex min-h-[96px] items-center rounded-xl bg-page p-6">
-        {render ? render(t) : <SpecFallback component={component} t={t} />}
+      <div
+        className={`relative mt-4 flex min-h-[96px] items-center rounded-xl bg-page p-6 ${
+          showImage ? 'justify-center' : ''
+        }`}
+      >
+        {showImage ? (
+          <>
+            <span className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full bg-surface/90 px-2 py-0.5 text-[11px] text-muted shadow-sm">
+              <FigmaMark size={12} /> from Figma
+            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewUrl}
+              alt={component.type}
+              onError={() => setImgFailed(true)}
+              className="max-h-[220px] max-w-full rounded-lg object-contain"
+            />
+          </>
+        ) : render ? (
+          render(t)
+        ) : (
+          <SpecFallback component={component} t={t} />
+        )}
       </div>
       {component.guidelines ? (
         <p className="mt-3 text-xs text-muted">{component.guidelines}</p>

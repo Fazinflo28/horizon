@@ -130,7 +130,7 @@ export function ExportMenu({
   )
 
   return (
-    <div ref={ref} className="relative ml-auto">
+    <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex h-10 items-center gap-2 rounded-full border border-brand px-4 text-sm font-semibold text-brand transition-colors hover:bg-brand-50"

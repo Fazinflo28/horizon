@@ -1,9 +1,18 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { Search, Bell, Moon, Sun, Plus, Menu as MenuIcon } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
+import {
+  Search,
+  Bell,
+  Moon,
+  Sun,
+  Plus,
+  Menu as MenuIcon,
+  Settings,
+  LogOut,
+} from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { createClient } from '@/lib/supabase/client'
 import CreateProjectModal from '@/components/CreateProjectModal'
@@ -80,6 +89,33 @@ export default function Navbar({
     } catch {
       // ignore storage failures (private mode, etc.)
     }
+  }
+
+  const router = useRouter()
+  const [avatarOpen, setAvatarOpen] = useState(false)
+  const avatarRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!avatarOpen) return
+    const onClick = (e: MouseEvent) => {
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node))
+        setAvatarOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setAvatarOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [avatarOpen])
+  const signOut = async () => {
+    setAvatarOpen(false)
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/signin')
+    router.refresh()
   }
 
   const initials = initialsFrom(resolvedName)
@@ -165,8 +201,31 @@ export default function Navbar({
           >
             {mounted && isDark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand">
-            {initials}
+          <div className="relative" ref={avatarRef}>
+            <button
+              onClick={() => setAvatarOpen((o) => !o)}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand"
+              aria-label="Account menu"
+            >
+              {initials}
+            </button>
+            {avatarOpen ? (
+              <div className="absolute right-0 top-11 z-50 w-44 rounded-xl border border-line bg-surface p-1.5 shadow-pop">
+                <Link
+                  href="/settings"
+                  onClick={() => setAvatarOpen(false)}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-body transition-colors hover:bg-page"
+                >
+                  <Settings size={16} className="text-muted" /> Settings
+                </Link>
+                <button
+                  onClick={signOut}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-body transition-colors hover:bg-page"
+                >
+                  <LogOut size={16} className="text-muted" /> Sign out
+                </button>
+              </div>
+            ) : null}
           </div>
           <button
             onClick={() => setMenuOpen((o) => !o)}

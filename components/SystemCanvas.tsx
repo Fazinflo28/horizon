@@ -8,8 +8,10 @@ import SpacingSection from '@/components/canvas/SpacingSection'
 import ShapeSection from '@/components/canvas/ShapeSection'
 import ComponentPreview from '@/components/canvas/ComponentPreview'
 import { ExportMenu } from '@/components/ExportMenu'
+import ResyncButton from '@/components/ResyncButton'
 import { useGoogleFont } from '@/components/canvas/useGoogleFont'
-import type { HorizonSystem } from '@/lib/types'
+import FigmaMark from '@/components/FigmaMark'
+import type { HorizonSystem, PreviewEntry } from '@/lib/types'
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="mb-4 text-lg font-bold text-ink">{children}</h2>
@@ -20,11 +22,18 @@ export function SystemCanvas({
   versionLabel,
   projectId,
   versionId,
+  previews,
+  onResynced,
 }: {
   system: HorizonSystem
   versionLabel: string
   projectId?: string
   versionId?: string
+  previews?: Record<string, PreviewEntry> | null
+  onResynced?: (res: {
+    system: HorizonSystem
+    previews: Record<string, PreviewEntry> | null
+  }) => void
 }) {
   const components = useMemo(() => system.components ?? [], [system.components])
   const tokens = useMemo(
@@ -83,7 +92,14 @@ export function SystemCanvas({
       <div className="min-w-0 flex-1 space-y-10">
         <div className="flex flex-wrap items-start gap-3">
           <div className="min-w-0">
-            <h2 className="text-xl font-bold text-ink">{system.name}</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-xl font-bold text-ink">{system.name}</h2>
+              {system.meta?.source === 'figma' ? (
+                <span className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-0.5 text-xs font-medium text-muted">
+                  <FigmaMark size={12} /> Figma import
+                </span>
+              ) : null}
+            </div>
             <p className="text-sm text-muted">{system.description}</p>
             {personality.length > 0 ? (
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -98,11 +114,16 @@ export function SystemCanvas({
               </div>
             ) : null}
           </div>
-          <ExportMenu
-            system={system}
-            projectId={projectId}
-            versionId={versionId}
-          />
+          <div className="ml-auto flex items-center gap-2">
+            {system.meta?.source === 'figma' && projectId && onResynced ? (
+              <ResyncButton projectId={projectId} onResynced={onResynced} />
+            ) : null}
+            <ExportMenu
+              system={system}
+              projectId={projectId}
+              versionId={versionId}
+            />
+          </div>
         </div>
 
         <section id="sec-colors" className="scroll-mt-24">
@@ -138,7 +159,11 @@ export function SystemCanvas({
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
               {components.map((c, i) => (
                 <div key={i} id={`sec-comp-${i}`} className="scroll-mt-24">
-                  <ComponentPreview component={c} system={system} />
+                  <ComponentPreview
+                    component={c}
+                    system={system}
+                    previewUrl={previews?.[c.type]?.imageUrl}
+                  />
                 </div>
               ))}
             </div>

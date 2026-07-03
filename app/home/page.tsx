@@ -1,25 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Bot } from 'lucide-react'
 import Navbar from '@/components/Navbar'
-import CreateProjectModal from '@/components/CreateProjectModal'
+import ImportFigmaModal from '@/components/ImportFigmaModal'
+import FigmaMark from '@/components/FigmaMark'
 import { AmbientBlobs } from '@/components/motion/AmbientBlobs'
 import { Reveal } from '@/components/motion/Reveal'
+import { useToast } from '@/components/Toast'
+import { createClient } from '@/lib/supabase/client'
 import type { ProjectSource } from '@/lib/types'
-
-function FigmaMark() {
-  return (
-    <svg viewBox="0 0 38 57" height={40} aria-hidden>
-      <path fill="#1abcfe" d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0z" />
-      <path fill="#0acf83" d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z" />
-      <path fill="#ff7262" d="M19 0v19h9.5a9.5 9.5 0 1 0 0-19H19z" />
-      <path fill="#f24e1e" d="M0 9.5A9.5 9.5 0 0 0 9.5 19H19V0H9.5A9.5 9.5 0 0 0 0 9.5z" />
-      <path fill="#a259ff" d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z" />
-    </svg>
-  )
-}
 
 function SketchMark() {
   return (
@@ -52,19 +43,43 @@ function XdMark() {
   )
 }
 
-const TOOLS: { source: ProjectSource; mark: React.ReactNode; label: string }[] = [
-  { source: 'figma', mark: <FigmaMark />, label: 'Figma' },
-  { source: 'sketch', mark: <SketchMark />, label: 'Sketch' },
-  { source: 'xd', mark: <XdMark />, label: 'Adobe XD' },
-]
-
 export default function HomePage() {
+  const { toast } = useToast()
   const [selected, setSelected] = useState<ProjectSource | null>(null)
-  const [modalOpen, setModalOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [connectFirst, setConnectFirst] = useState(false)
+  const [hasFigma, setHasFigma] = useState<boolean | null>(null)
 
-  const pick = (s: ProjectSource) => {
-    setSelected(s)
-    setModalOpen(true)
+  useEffect(() => {
+    let active = true
+    const supabase = createClient()
+    supabase
+      .from('figma_connections')
+      .select('figma_user_handle')
+      .maybeSingle()
+      .then(({ data }) => {
+        if (active) setHasFigma(!!data)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const tools: { source: ProjectSource; mark: React.ReactNode; label: string }[] =
+    [
+      { source: 'figma', mark: <FigmaMark size={40} />, label: 'Figma' },
+      { source: 'sketch', mark: <SketchMark />, label: 'Sketch' },
+      { source: 'xd', mark: <XdMark />, label: 'Adobe XD' },
+    ]
+
+  const pick = (source: ProjectSource) => {
+    if (source === 'figma') {
+      setSelected('figma')
+      if (hasFigma) setImportOpen(true)
+      else setConnectFirst(true)
+      return
+    }
+    toast('Sketch and Adobe XD support coming soon', 'info')
   }
 
   return (
@@ -81,7 +96,7 @@ export default function HomePage() {
         <div className="relative z-10 flex flex-col items-center">
           <Reveal delay={0.05}>
             <div className="flex items-center gap-8 rounded-full bg-surface px-10 py-6 shadow-pop">
-              {TOOLS.map((t) => (
+              {tools.map((t) => (
                 <button
                   key={t.source}
                   onClick={() => pick(t.source)}
@@ -114,19 +129,49 @@ export default function HomePage() {
 
           <Reveal delay={0.34}>
             <p className="mt-6 text-center text-sm leading-relaxed text-muted">
-              Start your project using one of the tools
+              Import a Figma file, or generate a system with AI
               <br />
-              or create project from main tab
+              or create a blank project from the top bar
             </p>
           </Reveal>
         </div>
       </main>
 
-      <CreateProjectModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        source={selected ?? 'ai'}
-      />
+      <ImportFigmaModal open={importOpen} onClose={() => setImportOpen(false)} />
+
+      {connectFirst ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]"
+          onClick={() => setConnectFirst(false)}
+        >
+          <div
+            className="w-[380px] max-w-full rounded-card bg-surface p-8 text-center shadow-pop"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto mb-3 flex justify-center">
+              <FigmaMark size={32} />
+            </div>
+            <h2 className="text-lg font-bold text-ink">Connect Figma first</h2>
+            <p className="mt-1 text-sm text-muted">
+              Link your Figma account in Settings, then import any file.
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button
+                onClick={() => setConnectFirst(false)}
+                className="h-11 flex-1 rounded-xl border border-line text-sm font-semibold text-muted hover:text-ink"
+              >
+                Cancel
+              </button>
+              <Link
+                href="/settings"
+                className="flex h-11 flex-1 items-center justify-center rounded-xl bg-brand text-sm font-semibold text-white hover:bg-brand-700"
+              >
+                Go to Settings
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

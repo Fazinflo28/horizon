@@ -16,6 +16,8 @@ export interface TypeStep {
   lineHeight: string
   weight: number
   usage: string
+  /** Original Figma text-style name, for imported systems. */
+  sourceName?: string
 }
 
 export interface ComponentSpec {
@@ -31,6 +33,10 @@ export interface ComponentSpec {
   guidelines: string
   /** Semantic token names this component reads (engine-assembled systems). */
   tokensUsed?: string[]
+  /** Original Figma component name, for imported systems. */
+  sourceName?: string
+  /** Figma node id (COMPONENT_SET or component), for preview + diff. */
+  nodeId?: string
 }
 
 export interface DocSection {
@@ -104,9 +110,13 @@ export interface HorizonSystem {
   /** Engine-generated systems only; older/kit systems omit these. */
   semanticTokens?: SemanticToken[]
   meta?: {
-    generatedAt: string
-    filters: GenerationFilters
-    decisions: Decisions
+    source?: 'ai' | 'figma' | 'kit'
+    generatedAt?: string
+    importedAt?: string
+    figmaFileKey?: string
+    figmaLastModified?: string
+    filters: GenerationFilters | null
+    decisions: Decisions | null
   }
 }
 
@@ -142,12 +152,19 @@ export interface Project {
   created_at: string
 }
 
+export interface PreviewEntry {
+  nodeId: string
+  imageUrl: string
+  fetchedAt: string
+}
+
 export interface ProjectVersion {
   id: string
   project_id: string
   version_number: number
   label: string
   system_json: HorizonSystem
+  preview_map?: Record<string, PreviewEntry> | null
   created_at: string
 }
 

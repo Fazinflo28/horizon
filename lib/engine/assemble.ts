@@ -24,7 +24,7 @@ const PILL_LIKE = new Set([
   'badge',
 ])
 
-const TOKENS_USED: Record<string, string[]> = {
+export const TOKENS_USED: Record<string, string[]> = {
   button: ['color-bg-brand', 'color-text-on-brand', 'color-border-focus'],
   iconbutton: ['color-bg-brand', 'color-text-on-brand', 'color-border-focus'],
   floatingbuttonfab: ['color-bg-brand', 'color-text-on-brand'],
@@ -79,9 +79,13 @@ const TOKENS_USED: Record<string, string[]> = {
   listitem: ['color-bg-surface', 'color-text-primary', 'color-text-secondary'],
   datagrid: ['color-bg-surface', 'color-text-primary', 'color-border'],
 }
-const TOKENS_FALLBACK = ['color-bg-surface', 'color-text-primary', 'color-border']
+export const TOKENS_FALLBACK = [
+  'color-bg-surface',
+  'color-text-primary',
+  'color-border',
+]
 
-function resolveFontSize(token: FontSizeToken, scale: TypeStep[]): string {
+export function resolveFontSize(token: FontSizeToken, scale: TypeStep[]): string {
   const step = scale.find((s) => s.name === FONT_STEP_NAME[token])
   return step ? step.size : FONT_FALLBACK[token]
 }

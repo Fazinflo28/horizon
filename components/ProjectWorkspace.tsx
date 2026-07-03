@@ -31,6 +31,7 @@ import type {
   ProjectVersion,
   ProjectStatus,
   HorizonSystem,
+  PreviewEntry,
 } from '@/lib/types'
 
 type Tab = 'design' | 'assets' | 'documentation'
@@ -139,11 +140,36 @@ export default function ProjectWorkspace({
   const currentVersion =
     versions.find((v) => v.id === selectedVersionId) ?? versions[0] ?? null
   const currentSystem = currentVersion?.system_json ?? null
-  const draftSystem =
-    versions.find((v) => v.version_number === 0)?.system_json ?? null
+  const draftVersion = versions.find((v) => v.version_number === 0)
+  const draftSystem = draftVersion?.system_json ?? null
+  const draftPreviewMap = draftVersion?.preview_map ?? null
   const isUploadSource = UPLOAD_SOURCES.includes(project.source)
   const systemForPublish =
     draftSystem ?? currentSystem ?? buildFallbackSystem(project.title)
+
+  function onResynced(res: {
+    system: HorizonSystem
+    previews: Record<string, PreviewEntry> | null
+  }) {
+    const draftId = versions.find((v) => v.version_number === 0)?.id
+    setVersions((prev) =>
+      prev.map((v) =>
+        v.version_number === 0
+          ? { ...v, system_json: res.system, preview_map: res.previews }
+          : v,
+      ),
+    )
+    setReviews((prev) =>
+      prev.map((r) => ({
+        ...r,
+        status: 'pending' as const,
+        note: null,
+        reviewed_at: null,
+      })),
+    )
+    setProject((p) => ({ ...p, status: 'draft' }))
+    if (draftId) setSelectedVersionId(draftId)
+  }
 
   const versionOptions =
     versions.length > 0
@@ -375,6 +401,8 @@ export default function ProjectWorkspace({
                   versionLabel={currentVersion?.label ?? 'Draft'}
                   projectId={project.id}
                   versionId={currentVersion?.id}
+                  previews={currentVersion?.preview_map ?? null}
+                  onResynced={onResynced}
                 />
               ) : (
                 <div className="rounded-card bg-surface shadow-card">
@@ -499,9 +527,11 @@ export default function ProjectWorkspace({
           {/* Right rail */}
           <ReviewPipeline
             projectId={project.id}
+            source={project.source}
             reviews={reviews}
             projectStatus={project.status}
             systemForPublish={systemForPublish}
+            draftPreviewMap={draftPreviewMap}
             versions={versions}
             onReviewsChange={setReviews}
             onStatusChange={(status: ProjectStatus) =>

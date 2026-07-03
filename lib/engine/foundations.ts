@@ -47,6 +47,37 @@ const SPACING_BASE: Record<string, number> = {
 
 const SPACING_MULTIPLIERS = [1, 2, 3, 4, 6, 8, 10, 12, 16, 20]
 
+/** The 16-token semantic layer. Shared by the generator and Figma import. */
+export function buildSemanticTokens(
+  primary: Palette,
+  neutral: Palette,
+  semantic: { success: string; warning: string; error: string; info: string },
+  accessibleShade: keyof Palette,
+): SemanticToken[] {
+  return [
+    { name: 'color-bg-page', value: neutral['50'], ref: 'neutral.50' },
+    { name: 'color-bg-surface', value: '#FFFFFF', ref: null },
+    { name: 'color-bg-brand', value: primary['600'], ref: 'primary.600' },
+    { name: 'color-bg-brand-hover', value: primary['700'], ref: 'primary.700' },
+    { name: 'color-text-primary', value: neutral['900'], ref: 'neutral.900' },
+    { name: 'color-text-secondary', value: neutral['600'], ref: 'neutral.600' },
+    { name: 'color-text-muted', value: neutral['400'], ref: 'neutral.400' },
+    { name: 'color-text-on-brand', value: '#FFFFFF', ref: null },
+    {
+      name: 'color-text-brand',
+      value: primary[accessibleShade],
+      ref: `primary.${accessibleShade}`,
+    },
+    { name: 'color-border', value: neutral['200'], ref: 'neutral.200' },
+    { name: 'color-border-strong', value: neutral['300'], ref: 'neutral.300' },
+    { name: 'color-border-focus', value: primary['500'], ref: 'primary.500' },
+    { name: 'color-success', value: semantic.success, ref: null },
+    { name: 'color-warning', value: semantic.warning, ref: null },
+    { name: 'color-error', value: semantic.error, ref: null },
+    { name: 'color-info', value: semantic.info, ref: null },
+  ]
+}
+
 export function buildFoundations(
   decisions: Decisions,
   filters: GenerationFilters,
@@ -93,28 +124,12 @@ export function buildFoundations(
     { name: 'focus', value: `0 0 0 3px ${primary['100']}` },
   ]
 
-  const semanticTokens: SemanticToken[] = [
-    { name: 'color-bg-page', value: neutral['50'], ref: 'neutral.50' },
-    { name: 'color-bg-surface', value: '#FFFFFF', ref: null },
-    { name: 'color-bg-brand', value: primary['600'], ref: 'primary.600' },
-    { name: 'color-bg-brand-hover', value: primary['700'], ref: 'primary.700' },
-    { name: 'color-text-primary', value: neutral['900'], ref: 'neutral.900' },
-    { name: 'color-text-secondary', value: neutral['600'], ref: 'neutral.600' },
-    { name: 'color-text-muted', value: neutral['400'], ref: 'neutral.400' },
-    { name: 'color-text-on-brand', value: '#FFFFFF', ref: null },
-    {
-      name: 'color-text-brand',
-      value: primary[accessibleShade],
-      ref: `primary.${accessibleShade}`,
-    },
-    { name: 'color-border', value: neutral['200'], ref: 'neutral.200' },
-    { name: 'color-border-strong', value: neutral['300'], ref: 'neutral.300' },
-    { name: 'color-border-focus', value: primary['500'], ref: 'primary.500' },
-    { name: 'color-success', value: semantic.success, ref: null },
-    { name: 'color-warning', value: semantic.warning, ref: null },
-    { name: 'color-error', value: semantic.error, ref: null },
-    { name: 'color-info', value: semantic.info, ref: null },
-  ]
+  const semanticTokens = buildSemanticTokens(
+    primary,
+    neutral,
+    semantic,
+    accessibleShade,
+  )
 
   return {
     primary,

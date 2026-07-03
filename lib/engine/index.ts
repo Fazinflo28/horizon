@@ -111,6 +111,7 @@ export async function runPipeline(
     components: withGuidelines,
     documentation: docs.documentation,
     meta: {
+      source: 'ai',
       generatedAt: new Date().toISOString(),
       filters,
       decisions,

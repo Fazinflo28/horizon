@@ -27,6 +27,9 @@ export function TypographySection({ system }: { system: HorizonSystem }) {
             </span>
             <div className="shrink-0 md:text-right">
               <p className="text-sm font-semibold text-ink">{step.name}</p>
+              {step.sourceName ? (
+                <p className="text-xs text-muted">{step.sourceName}</p>
+              ) : null}
               <p className="text-xs text-muted">
                 {step.size} / {step.lineHeight} / {step.weight}
               </p>

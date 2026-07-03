@@ -1,0 +1,71 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { decryptToken, assertEncryptionKey } from '@/lib/figma/crypto'
+import { figmaGetFileMeta, extractFileKey, FigmaError } from '@/lib/figma/client'
+
+export const runtime = 'nodejs'
+
+export async function POST(request: Request) {
+  try {
+    assertEncryptionKey()
+  } catch {
+    return NextResponse.json({ error: 'Figma is not configured' }, { status: 500 })
+  }
+
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+
+  let body: { url?: unknown }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+  const url = typeof body.url === 'string' ? body.url : ''
+  const key = extractFileKey(url)
+  if (!key) {
+    return NextResponse.json({ error: 'Invalid Figma link' }, { status: 400 })
+  }
+
+  const { data: conn } = await supabase
+    .from('figma_connections')
+    .select('encrypted_token')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!conn) {
+    return NextResponse.json({ error: 'not_connected' }, { status: 404 })
+  }
+
+  let token: string
+  try {
+    token = decryptToken(conn.encrypted_token)
+  } catch {
+    return NextResponse.json({ error: 'Stored token is unreadable' }, { status: 500 })
+  }
+
+  try {
+    const meta = await figmaGetFileMeta(token, key)
+    return NextResponse.json({
+      name: meta.name,
+      lastModified: meta.lastModified,
+      key: meta.key,
+    })
+  } catch (e) {
+    if (e instanceof FigmaError) {
+      if (e.code === 'forbidden')
+        return NextResponse.json(
+          { error: 'This token cannot access that file' },
+          { status: 403 },
+        )
+      if (e.code === 'not_found')
+        return NextResponse.json(
+          { error: 'File not found, check the link' },
+          { status: 404 },
+        )
+    }
+    return NextResponse.json({ error: 'Could not reach Figma' }, { status: 502 })
+  }
+}

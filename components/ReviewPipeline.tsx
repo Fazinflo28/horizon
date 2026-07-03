@@ -8,8 +8,10 @@ import type {
   Review,
   ReviewStage,
   ProjectStatus,
+  ProjectSource,
   ProjectVersion,
   HorizonSystem,
+  PreviewEntry,
 } from '@/lib/types'
 
 const ORDER: ReviewStage[] = ['copy', 'tech', 'accessibility', 'design']
@@ -27,18 +29,22 @@ const CHIP: Record<Review['status'], { cls: string; text: string }> = {
 
 export function ReviewPipeline({
   projectId,
+  source,
   reviews,
   projectStatus,
   systemForPublish,
+  draftPreviewMap,
   versions,
   onReviewsChange,
   onStatusChange,
   onPublished,
 }: {
   projectId: string
+  source: ProjectSource
   reviews: Review[]
   projectStatus: ProjectStatus
   systemForPublish: HorizonSystem
+  draftPreviewMap?: Record<string, PreviewEntry> | null
   versions: ProjectVersion[]
   onReviewsChange: (next: Review[]) => void
   onStatusChange: (next: ProjectStatus) => void
@@ -177,6 +183,7 @@ export function ReviewPipeline({
           version_number: nextN,
           label,
           system_json: systemForPublish,
+          preview_map: draftPreviewMap ?? null,
         })
         .select()
         .single()
@@ -207,8 +214,9 @@ export function ReviewPipeline({
       {projectStatus === 'rejected' ? (
         <div className="mb-4 rounded-xl bg-danger/10 p-4">
           <p className="text-sm font-medium text-danger">
-            Design file is not aligned with the components. Admins cannot save
-            this file in the system.
+            {source === 'figma'
+              ? 'Design file is not aligned with the approved components. Admins cannot save this file in the system.'
+              : 'Design file is not aligned with the components. Admins cannot save this file in the system.'}
           </p>
           {rejectedReview?.note ? (
             <p className="mt-2 text-xs text-danger/80">
