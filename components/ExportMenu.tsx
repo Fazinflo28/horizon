@@ -16,6 +16,7 @@ import { systemToCss } from '@/lib/exporters/css'
 import { systemToTailwind } from '@/lib/exporters/tailwind'
 import { systemToDtcg } from '@/lib/exporters/dtcg'
 import { systemToRulesMd } from '@/lib/exporters/rules-md'
+import FigmaMark from '@/components/FigmaMark'
 import type { HorizonSystem } from '@/lib/types'
 
 function slugify(s: string): string {
@@ -36,6 +37,7 @@ export function ExportMenu({
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
   const [zipping, setZipping] = useState(false)
+  const [kitting, setKitting] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -75,17 +77,22 @@ export function ExportMenu({
     setOpen(false)
   }
 
-  const downloadZip = async () => {
+  const downloadArchive = async (
+    kind: 'code' | 'figma-kit',
+    filename: string,
+    setLoading: (b: boolean) => void,
+    successMsg: string,
+  ) => {
     if (!projectId) {
       toast('Publish or save a version first', 'info')
       return
     }
-    setZipping(true)
+    setLoading(true)
     try {
       const res = await fetch('/api/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId, versionId }),
+        body: JSON.stringify({ projectId, versionId, kind }),
       })
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string }
@@ -96,17 +103,32 @@ export function ExportMenu({
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${slug}-design-system.zip`
+      a.download = filename
       a.click()
       URL.revokeObjectURL(url)
-      toast('Downloaded design system', 'success')
+      toast(successMsg, 'success')
       setOpen(false)
     } catch {
       toast('Export failed', 'error')
     } finally {
-      setZipping(false)
+      setLoading(false)
     }
   }
+
+  const downloadZip = () =>
+    downloadArchive(
+      'code',
+      `${slug}-design-system.zip`,
+      setZipping,
+      'Downloaded design system',
+    )
+  const downloadFigmaKit = () =>
+    downloadArchive(
+      'figma-kit',
+      `${slug}-figma-kit.zip`,
+      setKitting,
+      'Figma kit downloaded',
+    )
 
   const Item = ({
     icon: Icon,
@@ -179,6 +201,23 @@ export function ExportMenu({
               )
             }
           />
+          <button
+            onClick={downloadFigmaKit}
+            disabled={kitting}
+            className="flex w-full items-start gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-page disabled:opacity-50"
+          >
+            <span className="mt-0.5 shrink-0">
+              <FigmaMark size={16} />
+            </span>
+            <span>
+              <span className="block text-sm text-body">
+                {kitting ? 'Building…' : 'Download Figma Kit (.svg)'}
+              </span>
+              <span className="block text-[11px] text-muted">
+                Editable layers, import by drag &amp; drop
+              </span>
+            </span>
+          </button>
           <Item
             icon={Package}
             label={zipping ? 'Zipping…' : 'Download components (.zip)'}

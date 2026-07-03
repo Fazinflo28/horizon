@@ -9,6 +9,9 @@ import {
   hslToHex,
 } from '../color'
 import { buildScale } from '../typography'
+import { buildSemanticTokens } from '../foundations'
+import { mixHex, resolveToken } from '@/lib/exporters/svg/primitives'
+import type { HorizonSystem } from '@/lib/types'
 
 let failures = 0
 const HEX = /^#[0-9A-Fa-f]{6}$/
@@ -63,6 +66,39 @@ assert(
 )
 const empty = buildScale(1.25, [])
 assert(empty.length === 4, 'empty selection falls back to minimum viable set')
+
+console.log('figma-kit primitives')
+{
+  const mid = mixHex('#000000', '#FFFFFF', 0.5)
+  const chans = [
+    parseInt(mid.slice(1, 3), 16),
+    parseInt(mid.slice(3, 5), 16),
+    parseInt(mid.slice(5, 7), 16),
+  ]
+  assert(chans.every((c) => Math.abs(c - 128) <= 1), `mixHex mid ~#808080 (got ${mid})`)
+  assert(mixHex('#4F46E5', '#FFFFFF', 0).toUpperCase() === '#4F46E5', 'mixHex t=0 returns a')
+
+  const primary = generateRamp('#4F46E5')
+  const neutralRamp = generateNeutralRamp('#4F46E5')
+  const sem = semanticColors(4.5)
+  const tokens = buildSemanticTokens(primary, neutralRamp, sem, '700')
+  const sample = {
+    name: 'Sample',
+    colors: { primary, secondary: primary, neutral: neutralRamp, semantic: sem },
+    semanticTokens: tokens,
+  } as unknown as HorizonSystem
+  assert(
+    tokens.every((t) => HEX.test(resolveToken(sample, t.name))),
+    'resolveToken returns valid hex for every semantic token',
+  )
+  assert(
+    resolveToken(sample, 'color-bg-brand').toUpperCase() === primary['600'].toUpperCase(),
+    'resolveToken color-bg-brand -> primary 600',
+  )
+  // fallback path (no semanticTokens)
+  const noTokens = { colors: sample.colors } as unknown as HorizonSystem
+  assert(HEX.test(resolveToken(noTokens, 'color-text-primary')), 'resolveToken falls back to ramps')
+}
 
 if (failures > 0) {
   console.error(`\n${failures} assertion(s) failed`)

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { buildZip } from '@/lib/exporters/zip'
+import { buildFigmaKit } from '@/lib/exporters/figma-kit'
 import type { HorizonSystem, ProjectVersion } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser()
   if (!user) return json({ error: 'Not signed in' }, 401)
 
-  let body: { projectId?: unknown; versionId?: unknown }
+  let body: { projectId?: unknown; versionId?: unknown; kind?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
   }
   const projectId = typeof body.projectId === 'string' ? body.projectId : null
   const versionId = typeof body.versionId === 'string' ? body.versionId : null
+  const kind = body.kind === 'figma-kit' ? 'figma-kit' : 'code'
   if (!projectId) return json({ error: 'Missing projectId' }, 400)
 
   // RLS ensures only the owner's versions come back.
@@ -54,11 +56,15 @@ export async function POST(request: Request) {
   const system = version.system_json as HorizonSystem
   if (!system) return json({ error: 'Version has no system' }, 404)
 
-  const bytes = await buildZip(system)
+  const bytes =
+    kind === 'figma-kit' ? await buildFigmaKit(system) : await buildZip(system)
   // Copy into a plain ArrayBuffer (a clean BodyInit across TS lib versions).
   const buffer = new ArrayBuffer(bytes.byteLength)
   new Uint8Array(buffer).set(bytes)
-  const filename = `${slugify(system.name)}-design-system.zip`
+  const filename =
+    kind === 'figma-kit'
+      ? `${slugify(system.name)}-figma-kit.zip`
+      : `${slugify(system.name)}-design-system.zip`
 
   return new Response(buffer, {
     status: 200,
