@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { X } from 'lucide-react'
 import StatusBadge from '@/components/StatusBadge'
+import { validateSystem } from '@/lib/validate'
 import type { HorizonSystem, ProjectSource, ProjectStatus } from '@/lib/types'
 
 export interface ProjectRow {
@@ -41,6 +42,12 @@ export function ProjectCard({
     secondary?.['500'],
   ].filter(Boolean) as string[]
   const componentCount = sys?.components?.length ?? 0
+
+  // Real rule-engine run — not a decorative number.
+  const health = validateSystem(sys)
+  // matches tailwind.config danger/warning/success (they are literal hex, not vars)
+  const healthColor =
+    health.blockers > 0 ? '#EE5D50' : health.warnings > 0 ? '#FFB547' : '#05CD99'
 
   return (
     <Link
@@ -83,6 +90,26 @@ export function ProjectCard({
           {componentCount > 0 ? ` · ${componentCount} components` : ''}
         </span>
       </div>
+
+      {sys ? (
+        <div className="mt-3">
+          <div className="h-1.5 overflow-hidden rounded-full bg-field">
+            <div
+              className="h-full rounded-full transition-[width] duration-300"
+              style={{ width: `${health.pct}%`, background: healthColor }}
+            />
+          </div>
+          <div className="mt-1.5 flex justify-between text-[11px] text-muted">
+            <span>Compiler health</span>
+            <span>
+              {health.passed
+                ? 'compiles clean'
+                : `${health.blockers} blocker${health.blockers === 1 ? '' : 's'} · ${health.warnings} warning${health.warnings === 1 ? '' : 's'}`}{' '}
+              · {health.pct}%
+            </span>
+          </div>
+        </div>
+      ) : null}
     </Link>
   )
 }

@@ -61,7 +61,9 @@ export function buildSemanticTokens(
     { name: 'color-bg-brand-hover', value: primary['700'], ref: 'primary.700' },
     { name: 'color-text-primary', value: neutral['900'], ref: 'neutral.900' },
     { name: 'color-text-secondary', value: neutral['600'], ref: 'neutral.600' },
-    { name: 'color-text-muted', value: neutral['400'], ref: 'neutral.400' },
+    // neutral.400 only reaches ~2.6:1 on the page background — fails WCAG AA.
+    // neutral.500 clears 4.5:1 while still reading as secondary text.
+    { name: 'color-text-muted', value: neutral['500'], ref: 'neutral.500' },
     { name: 'color-text-on-brand', value: '#FFFFFF', ref: null },
     {
       name: 'color-text-brand',
