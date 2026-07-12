@@ -341,7 +341,7 @@ export default function ProjectWorkspace({
 
           {!draftSystem ? (
             <Link
-              href="/generator"
+              href="/home"
               className="btn-gradient ml-auto flex h-10 items-center gap-2 rounded-full px-5 text-sm font-semibold text-white"
             >
               <Sparkles size={16} /> Generate AI
@@ -419,7 +419,7 @@ export default function ProjectWorkspace({
                       subtitle="Generate a design system to see it rendered here"
                       action={
                         <Link
-                          href="/generator"
+                          href="/home"
                           className="btn-gradient inline-flex h-10 items-center gap-2 rounded-full px-5 text-sm font-semibold text-white"
                         >
                           <Sparkles size={16} /> Generate AI

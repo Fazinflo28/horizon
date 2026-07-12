@@ -24,7 +24,7 @@ export interface NavLink {
 
 const DEFAULT_LINKS: NavLink[] = [
   { label: 'Pricing' },
-  { label: 'Shop', href: '/shop' },
+  { label: 'Shop', href: '/home#shop' },
   { label: 'Help?' },
 ]
 
