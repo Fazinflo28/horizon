@@ -12,7 +12,7 @@ export interface ProjectRow {
   source: ProjectSource
   status: ProjectStatus
   created_at: string
-  /** Newest version's system, used for the swatches + component count. */
+  /** Newest version's system, used for the swatches + health. Null = no version yet. */
   system: HorizonSystem | null
   versionLabel: string | null
 }
@@ -52,64 +52,73 @@ export function ProjectCard({
   return (
     <Link
       href={`/project/${project.id}`}
-      className="block rounded-2xl bg-surface p-4 shadow-card transition-transform hover:-translate-y-0.5 hover:shadow-pop"
+      className="flex h-full flex-col rounded-2xl border border-line/70 bg-surface p-3.5 shadow-card transition-all hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-pop"
     >
+      {/* swatch strip — always rendered so every card is the same height */}
       <div className="flex gap-1">
         {swatches.length > 0 ? (
           swatches.map((hex, i) => (
-            <span
-              key={i}
-              className="h-8 flex-1 rounded-md"
-              style={{ background: hex }}
-            />
+            <span key={i} className="h-7 flex-1 rounded-md" style={{ background: hex }} />
           ))
         ) : (
-          <span className="h-8 flex-1 rounded-md bg-field" />
+          <span className="flex h-7 flex-1 items-center justify-center rounded-md border border-dashed border-line text-[10px] text-muted">
+            No palette yet
+          </span>
         )}
       </div>
 
-      <div className="mt-3 flex items-start justify-between gap-2">
-        <span className="truncate text-sm font-bold text-ink">{project.title}</span>
+      <div className="mt-2.5 flex items-start justify-between gap-2">
+        <span className="truncate text-[13px] font-bold text-ink">{project.title}</span>
         <button
           aria-label="Delete project"
           onClick={(e) => {
             e.preventDefault()
             onDelete(project.id)
           }}
-          className="-mr-1 shrink-0 rounded-md p-1 text-muted transition-colors hover:bg-danger/10 hover:text-danger"
+          className="-mr-0.5 shrink-0 rounded-md p-0.5 text-muted transition-colors hover:bg-danger/10 hover:text-danger"
         >
-          <X size={14} />
+          <X size={13} />
         </button>
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
+      <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
         <StatusBadge status={project.status} />
-        <span>
+        <span className="truncate">
           {project.versionLabel ? `${project.versionLabel} · ` : ''}
           {SOURCE_LABEL[project.source]}
           {componentCount > 0 ? ` · ${componentCount} components` : ''}
         </span>
       </div>
 
-      {sys ? (
-        <div className="mt-3">
-          <div className="h-1.5 overflow-hidden rounded-full bg-field">
-            <div
-              className="h-full rounded-full transition-[width] duration-300"
-              style={{ width: `${health.pct}%`, background: healthColor }}
-            />
-          </div>
-          <div className="mt-1.5 flex justify-between text-[11px] text-muted">
-            <span>Compiler health</span>
-            <span>
-              {health.passed
-                ? 'compiles clean'
-                : `${health.blockers} blocker${health.blockers === 1 ? '' : 's'} · ${health.warnings} warning${health.warnings === 1 ? '' : 's'}`}{' '}
-              · {health.pct}%
-            </span>
-          </div>
-        </div>
-      ) : null}
+      {/* health row pinned to the bottom, so cards line up even when text wraps */}
+      <div className="mt-auto pt-3">
+        {sys ? (
+          <>
+            <div className="h-1.5 overflow-hidden rounded-full bg-field">
+              <div
+                className="h-full rounded-full transition-[width] duration-300"
+                style={{ width: `${health.pct}%`, background: healthColor }}
+              />
+            </div>
+            <div className="mt-1.5 flex justify-between gap-2 text-[10.5px] text-muted">
+              <span>Compiler health</span>
+              <span className="truncate">
+                {health.passed
+                  ? 'compiles clean'
+                  : `${health.blockers} blocker${health.blockers === 1 ? '' : 's'} · ${health.warnings} warning${health.warnings === 1 ? '' : 's'}`}{' '}
+                · {health.pct}%
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="h-1.5 rounded-full bg-field" />
+            <div className="mt-1.5 text-[10.5px] text-muted">
+              Not generated yet — open to build it
+            </div>
+          </>
+        )}
+      </div>
     </Link>
   )
 }

@@ -63,7 +63,7 @@ export function FilterPills({
   onToggle: (key: PanelKey) => void
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-1.5">
       {pillStates(filters).map((p) => {
         const open = openPanel === p.key
         const active = open || p.highlighted
@@ -71,14 +71,14 @@ export function FilterPills({
           <button
             key={p.key}
             onClick={() => onToggle(p.key)}
-            className={`flex h-10 items-center gap-1.5 rounded-full border px-4 text-sm transition-colors ${
+            className={`flex h-8 items-center gap-1 rounded-full border px-3 text-xs transition-colors ${
               active
-                ? 'border-brand text-brand'
-                : 'border-line bg-surface text-muted hover:text-ink'
+                ? 'border-brand bg-brand-50 font-medium text-brand'
+                : 'border-line bg-surface text-muted hover:border-brand/40 hover:text-ink'
             }`}
           >
             {p.label}
-            {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
           </button>
         )
       })}

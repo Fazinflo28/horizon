@@ -36,35 +36,35 @@ export function KitCard({
   return (
     <button
       onClick={() => onOpen(kit)}
-      className="group block text-left transition-transform duration-200 hover:-translate-y-0.5"
+      className="group flex h-full w-full flex-col text-left transition-transform duration-200 hover:-translate-y-0.5"
     >
       <div
-        className="relative flex h-[180px] flex-col justify-between overflow-hidden rounded-xl p-5 shadow-card transition-shadow group-hover:shadow-pop"
+        className="relative flex h-[132px] flex-col justify-between overflow-hidden rounded-xl p-4 shadow-card transition-shadow group-hover:shadow-pop"
         style={{ background: kit.cover_gradient }}
       >
         <span
-          className="inline-flex w-fit rounded-full bg-white/25 px-2.5 py-1 text-[11px] font-semibold backdrop-blur-sm"
+          className="inline-flex w-fit rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm"
           style={{ color: textColor }}
         >
           {kit.industry}
         </span>
-        <p className="text-xl font-bold leading-tight" style={{ color: textColor }}>
+        <p className="text-base font-bold leading-tight" style={{ color: textColor }}>
           {kit.title}
         </p>
       </div>
 
-      <p className="mt-3 truncate text-[15px] font-semibold text-ink">
+      <p className="mt-2.5 truncate text-[13px] font-semibold text-ink">
         {kit.title}
       </p>
-      <p className="text-xs text-muted">
+      <p className="truncate text-[11px] text-muted">
         by {kit.author} &nbsp;•&nbsp; {kit.is_free ? 'Free' : 'Paid'}
       </p>
-      <div className="mt-1 flex items-center gap-4 text-xs text-muted">
+      <div className="mt-1 flex items-center gap-3 text-[11px] text-muted">
         <span className="flex items-center gap-1">
-          <Heart size={14} /> {formatCount(kit.likes)}
+          <Heart size={12} /> {formatCount(kit.likes)}
         </span>
         <span className="flex items-center gap-1">
-          <User size={14} /> {formatCount(kit.views)}
+          <User size={12} /> {formatCount(kit.views)}
         </span>
       </div>
     </button>

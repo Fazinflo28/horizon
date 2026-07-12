@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Bot, Sparkles, Search, Store } from 'lucide-react'
+import { ArrowUp, Sparkles, Search, Store } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Navbar from '@/components/Navbar'
 import { Spinner } from '@/components/Spinner'
@@ -311,75 +311,91 @@ export default function HomePage() {
           ]}
         />
 
-        <div className="relative z-10 mx-auto max-w-[1180px] pb-24">
+        <div className="relative z-10 mx-auto max-w-[1320px] pb-20">
           {/* ================= Generator ================= */}
-          <section className="mx-auto max-w-5xl pt-16">
+          <section className="mx-auto max-w-3xl pt-12 md:pt-16">
             {generating ? (
-              <div className="rounded-[24px] bg-surface p-8 shadow-card">
+              <div className="rounded-2xl bg-surface p-7 shadow-card">
                 <div className="space-y-3">
                   {['85%', '70%', '92%', '60%', '78%'].map((w, i) => (
                     <div
                       key={i}
-                      className="h-4 animate-pulse rounded-full bg-page"
+                      className="h-3.5 animate-pulse rounded-full bg-page"
                       style={{ width: w }}
                     />
                   ))}
                 </div>
-                <div className="mt-7 flex items-center gap-3 text-sm font-medium text-ink">
+                <div className="mt-6 flex items-center gap-3 text-sm font-medium text-ink">
                   <Spinner size={18} className="text-brand" />
                   {STATUS_STEPS[statusIndex]}
                 </div>
               </div>
             ) : (
               <>
-                <Reveal delay={0.05}>
-                  <div className="rounded-[24px] bg-surface p-7 shadow-card md:p-8">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand">
-                        <Sparkles size={14} /> AI Design System
-                      </span>
-                      <button
-                        onClick={openFigmaImport}
-                        className="flex h-10 items-center gap-2 rounded-full border border-line bg-surface px-4 text-[13px] font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-50"
-                      >
-                        <FigmaMark size={15} />
-                        Import a Figma file
-                      </button>
-                    </div>
+                <Reveal delay={0.02}>
+                  <div className="text-center">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-brand">
+                      <Sparkles size={12} /> AI Design System
+                    </span>
+                    <h1 className="mt-4 text-[32px] font-extrabold leading-[1.12] tracking-tight text-ink md:text-[42px]">
+                      Build something{' '}
+                      <span className="text-gradient">systematic</span>
+                    </h1>
+                    <p className="mx-auto mt-3 max-w-lg text-sm text-muted md:text-[15px]">
+                      Describe a design system or import a Figma file — Horizon
+                      compiles it into tokens, components and docs.
+                    </p>
+                  </div>
+                </Reveal>
 
+                <Reveal delay={0.08}>
+                  <div className="mt-6 rounded-2xl bg-surface p-3.5 shadow-pop ring-1 ring-line/60 transition-shadow focus-within:ring-brand/40">
                     <textarea
-                      rows={3}
+                      rows={2}
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
-                      placeholder="Type Horizon to create component, design system..."
-                      className="w-full resize-none border-0 bg-transparent text-xl text-ink placeholder:text-muted/70 focus:outline-none focus:ring-0 md:text-2xl"
+                      placeholder="Ask Horizon to build a design system for…"
+                      className="min-h-[56px] w-full resize-none border-0 bg-transparent px-1.5 pt-1 text-[15px] text-ink placeholder:text-muted/80 focus:outline-none focus:ring-0 md:text-base"
                     />
-
-                    <div className="mx-1 my-4 border-t border-line" />
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      <FilterPills
-                        filters={filters}
-                        openPanel={openPanel}
-                        onToggle={(key) =>
-                          setOpenPanel((prev) => (prev === key ? null : key))
-                        }
-                      />
+                    <div className="mt-1.5 flex items-center gap-2">
                       <button
-                        onClick={handleGenerate}
-                        disabled={!canGenerate}
-                        className={`btn-gradient ml-auto flex h-12 items-center gap-2 rounded-full px-7 text-sm font-semibold text-white ${
-                          !canGenerate ? 'pointer-events-none opacity-40' : ''
-                        }`}
+                        onClick={openFigmaImport}
+                        className="flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-xs font-medium text-ink transition-colors hover:border-brand hover:bg-brand-50"
                       >
-                        <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-white/25">
-                          <Bot size={16} />
-                        </span>
-                        Generate
+                        <FigmaMark size={13} />
+                        Import Figma
                       </button>
+                      <div className="ml-auto flex items-center gap-2.5">
+                        <span className="hidden text-[11px] text-muted sm:block">
+                          {filters.components.length} components ·{' '}
+                          {filters.global.length} tokens
+                        </span>
+                        <button
+                          onClick={handleGenerate}
+                          disabled={!canGenerate}
+                          aria-label="Generate design system"
+                          className={`btn-gradient flex h-9 items-center gap-1.5 rounded-full pl-3.5 pr-3 text-xs font-semibold text-white ${
+                            !canGenerate ? 'pointer-events-none opacity-40' : ''
+                          }`}
+                        >
+                          Generate
+                          <ArrowUp size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </Reveal>
+
+                {/* filters live under the bar, so the prompt itself stays clean */}
+                <div className="mt-3 flex flex-wrap justify-center">
+                  <FilterPills
+                    filters={filters}
+                    openPanel={openPanel}
+                    onToggle={(key) =>
+                      setOpenPanel((prev) => (prev === key ? null : key))
+                    }
+                  />
+                </div>
 
                 <AnimatePresence>
                   {openPanel ? (
@@ -389,27 +405,22 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                      className="mt-4 rounded-[24px] bg-surface p-8 shadow-card"
+                      className="mt-3 rounded-2xl bg-surface p-6 shadow-card"
                     >
                       {renderPanel()}
                     </motion.div>
                   ) : null}
                 </AnimatePresence>
-
-                <p className="mt-4 text-center text-[13px] text-muted">
-                  Describe a system to generate it, or import a Figma file — either
-                  way it runs through the same compiler before it ships.
-                </p>
               </>
             )}
           </section>
 
           {/* ============= Your design systems ============= */}
-          <section id="projects" className="mt-14 scroll-mt-24">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-extrabold text-ink">Your design systems</h2>
+          <section id="projects" className="mt-16 scroll-mt-24">
+            <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-base font-extrabold text-ink">Your design systems</h2>
               {projects.length > 0 ? (
-                <span className="text-xs text-muted">
+                <span className="text-[11px] text-muted">
                   {projects.length} project{projects.length > 1 ? 's' : ''}
                 </span>
               ) : null}
@@ -420,15 +431,16 @@ export default function HomePage() {
                 <Spinner size={24} className="text-brand" />
               </div>
             ) : projects.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              // auto-rows-fr keeps every card the same height, whatever it contains
+              <div className="grid auto-rows-fr grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {projects.map((p, i) => (
-                  <Reveal key={p.id} delay={Math.min(i * 0.04, 0.3)} y={14}>
+                  <Reveal key={p.id} delay={Math.min(i * 0.03, 0.24)} y={12} className="h-full">
                     <ProjectCard project={p} onDelete={deleteProject} />
                   </Reveal>
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-line bg-surface p-9 text-center text-[13.5px] text-muted">
+              <div className="rounded-2xl border border-dashed border-line bg-surface p-9 text-center text-[13px] text-muted">
                 No systems yet — generate one above or import a Figma file to get
                 started.
               </div>
@@ -436,33 +448,33 @@ export default function HomePage() {
           </section>
 
           {/* ==================== Shop ==================== */}
-          <section id="shop" className="mt-14 scroll-mt-24">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-extrabold text-ink">
+          <section id="shop" className="mt-16 scroll-mt-24">
+            <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-base font-extrabold text-ink">
                 Pre-build design systems
               </h2>
-              <label className="flex h-11 w-[300px] max-w-[60vw] items-center gap-2 rounded-full border border-line bg-surface px-4 transition-colors focus-within:border-brand">
-                <Search size={16} className="shrink-0 text-muted" />
+              <label className="flex h-9 w-[280px] max-w-[60vw] items-center gap-2 rounded-full border border-line bg-surface px-3.5 transition-colors focus-within:border-brand">
+                <Search size={14} className="shrink-0 text-muted" />
                 <input
                   value={kitQuery}
                   onChange={(e) => setKitQuery(e.target.value)}
                   placeholder="Search kits, authors, industries"
-                  className="w-full border-0 bg-transparent text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-0"
+                  className="w-full border-0 bg-transparent text-xs text-ink placeholder:text-muted focus:outline-none focus:ring-0"
                 />
               </label>
             </div>
 
-            <div className="mb-5 flex flex-wrap gap-2.5">
+            <div className="mb-4 flex flex-wrap gap-1.5">
               {shopPills.map((p) => {
                 const active = industry === p
                 return (
                   <button
                     key={p}
                     onClick={() => setIndustry(p)}
-                    className={`h-9 rounded-full border px-3.5 text-[13px] transition-colors ${
+                    className={`h-8 rounded-full border px-3 text-xs transition-colors ${
                       active
                         ? 'border-brand bg-brand-50 font-medium text-brand'
-                        : 'border-line bg-surface text-muted hover:text-ink'
+                        : 'border-line bg-surface text-muted hover:border-brand/40 hover:text-ink'
                     }`}
                   >
                     {p}
@@ -476,9 +488,9 @@ export default function HomePage() {
                 <Spinner size={28} className="text-brand" />
               </div>
             ) : filteredKits.length > 0 ? (
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid auto-rows-fr grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {filteredKits.map((kit, i) => (
-                  <Reveal key={kit.id} delay={Math.min(i * 0.04, 0.4)} y={16}>
+                  <Reveal key={kit.id} delay={Math.min(i * 0.03, 0.3)} y={14} className="h-full">
                     <KitCard kit={kit} onOpen={setSelectedKit} />
                   </Reveal>
                 ))}
