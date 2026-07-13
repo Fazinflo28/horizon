@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -40,6 +40,15 @@ function GoogleG() {
 export default function SignInPage() {
   const router = useRouter()
   const { toast } = useToast()
+
+  // Surface a failed OAuth round-trip (?error= from /auth/callback). Read from
+  // window rather than useSearchParams so the page stays statically renderable.
+  useEffect(() => {
+    const err = new URLSearchParams(window.location.search).get('error')
+    if (!err) return
+    toast(err, 'error')
+    window.history.replaceState({}, '', '/signin')
+  }, [toast])
 
   const [mode, setMode] = useState<Mode>('signin')
   const [fullName, setFullName] = useState('')
@@ -105,7 +114,9 @@ export default function SignInPage() {
       const supabase = createClient()
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${location.origin}/home` },
+        // Must land on the callback route: it exchanges ?code= for a session.
+        // Sending the user straight to /home would leave them signed out.
+        options: { redirectTo: `${location.origin}/auth/callback?next=/home` },
       })
       if (error) toast('Google sign-in not configured yet, use email', 'error')
     } catch {

@@ -5,7 +5,12 @@ export async function middleware(request: NextRequest) {
   const { supabaseResponse, user } = await updateSession(request)
   const { pathname } = request.nextUrl
 
-  const isPublic = pathname === '/' || pathname === '/signin'
+  // /auth/callback must stay public: the user is not signed in *yet* when the
+  // OAuth provider redirects there — that route is what creates the session.
+  const isPublic =
+    pathname === '/' ||
+    pathname === '/signin' ||
+    pathname.startsWith('/auth/callback')
   const isApi = pathname.startsWith('/api')
   const isInternal = pathname.startsWith('/_next')
   const isStaticFile = pathname.includes('.')
